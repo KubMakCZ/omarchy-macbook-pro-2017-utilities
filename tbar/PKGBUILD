@@ -1,6 +1,6 @@
 pkgname=tbar
 pkgver=0.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Touch Bar scene editor for Omarchy (experimental)"
 arch=('x86_64')
 license=('LicenseRef-Unlicensed')

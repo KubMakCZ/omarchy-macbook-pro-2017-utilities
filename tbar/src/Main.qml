@@ -8,8 +8,8 @@ ApplicationWindow {
     visible: true
     width: 900
     height: 760
-    minimumWidth: 720
-    minimumHeight: 540
+    minimumWidth: 360
+    minimumHeight: 320
     title: qsTr("Touch Bar layouts")
     color: "#171717"
     Material.theme: Material.Dark
@@ -29,168 +29,182 @@ ApplicationWindow {
         onActivated: applyConfirm.open()
     }
 
-    ColumnLayout {
+    ScrollView {
+        id: editorScroll
+        objectName: "editorScroll"
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 12
+        anchors.margins: 12
+        clip: true
+        contentWidth: Math.max(650, availableWidth)
+        contentHeight: editorContent.implicitHeight
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+        ScrollBar.horizontal.policy: ScrollBar.AsNeeded
 
-        Label {
-            text: qsTr("Touch Bar layouts")
-            font.pixelSize: 24
-            font.bold: true
-        }
-        Label {
-            text: backend.rendererAvailable
-                ? qsTr("Renderer found. T1Bridge must also be running.")
-                : qsTr("Renderer not found. Hardware support is also required.")
-            wrapMode: Text.Wrap
-            Layout.fillWidth: true
-        }
-        RowLayout {
-            Label { text: qsTr("Layout") }
-            ComboBox {
-                id: profiles
-                Layout.fillWidth: true
-                model: backend.profiles
-                currentIndex: backend.selected
-                onActivated: function(index) { backend.select(index) }
-            }
-            Button { text: qsTr("New"); onClicked: createProfile.open() }
-            Button { text: qsTr("Add examples"); onClicked: backend.addExamples() }
-            Button {
-                text: qsTr("Delete")
-                enabled: backend.profiles.length > 1
-                onClicked: deleteProfile.open()
-            }
-        }
-        Label {
-            text: qsTr("Escape is always present. Hold Fn for F1–F12.")
-            wrapMode: Text.Wrap
-            Layout.fillWidth: true
-        }
-        RowLayout {
-            Label { text: qsTr("Live preview") }
-            CheckBox {
-                text: qsTr("Fn layer")
-                checked: backend.previewFn
-                onToggled: backend.previewFn = checked
+        ColumnLayout {
+            id: editorContent
+            width: editorScroll.contentWidth
+            height: implicitHeight
+            spacing: 12
+
+            Label {
+                text: qsTr("Touch Bar layouts")
+                font.pixelSize: 24
+                font.bold: true
             }
             Label {
-                text: backend.previewError
-                color: "#e05a5a"
+                text: backend.rendererAvailable
+                    ? qsTr("Renderer found. T1Bridge must also be running.")
+                    : qsTr("Renderer not found. Hardware support is also required.")
+                wrapMode: Text.Wrap
                 Layout.fillWidth: true
-                elide: Text.ElideRight
             }
-        }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            color: "#000000"
-            Image {
-                anchors.fill: parent
-                source: backend.preview
-                cache: false
-                fillMode: Image.PreserveAspectFit
-                asynchronous: true
+            RowLayout {
+                Label { text: qsTr("Layout") }
+                ComboBox {
+                    id: profiles
+                    Layout.fillWidth: true
+                    model: backend.profiles
+                    currentIndex: backend.selected
+                    onActivated: function(index) { backend.select(index) }
+                }
+                Button { text: qsTr("New"); onClicked: createProfile.open() }
+                Button { text: qsTr("Add examples"); onClicked: backend.addExamples() }
+                Button {
+                    text: qsTr("Delete")
+                    enabled: backend.profiles.length > 1
+                    onClicked: deleteProfile.open()
+                }
             }
-        }
-        ListView {
-            id: list
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
-            spacing: 4
-            model: backend.buttons
-            ScrollBar.vertical: ScrollBar {}
-            delegate: Rectangle {
-                required property int index
-                required property var modelData
-                width: list.width
-                height: 54
-                color: "#252525"
-                RowLayout {
+            Label {
+                text: qsTr("Escape is always present. Hold Fn for F1–F12.")
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+            RowLayout {
+                Label { text: qsTr("Live preview") }
+                CheckBox {
+                    text: qsTr("Fn layer")
+                    checked: backend.previewFn
+                    onToggled: backend.previewFn = checked
+                }
+                Label {
+                    text: backend.previewError
+                    color: "#e05a5a"
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                }
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                color: "#000000"
+                Image {
                     anchors.fill: parent
-                    anchors.margins: 8
-                    Label { text: modelData.label; font.bold: true; Layout.preferredWidth: 120; elide: Text.ElideRight }
-                    Label { text: modelData.command; Layout.fillWidth: true; elide: Text.ElideMiddle }
-                    ToolButton { text: "↑"; enabled: index > 0; onClicked: backend.moveButton(index, index - 1) }
-                    ToolButton { text: "↓"; enabled: index + 1 < list.count; onClicked: backend.moveButton(index, index + 1) }
-                    ToolButton { text: "×"; onClicked: backend.removeButton(index) }
+                    source: backend.preview
+                    cache: false
+                    fillMode: Image.PreserveAspectFit
+                    asynchronous: true
                 }
             }
-        }
-        RowLayout {
-            TextField {
-                id: labelInput
-                Layout.preferredWidth: 160
-                placeholderText: qsTr("Label")
-                maximumLength: 16
-            }
-            TextField {
-                id: commandInput
+            ListView {
+                id: list
                 Layout.fillWidth: true
-                placeholderText: qsTr("Command, e.g. omarchy agent")
-                maximumLength: 1024
-            }
-            Button {
-                text: qsTr("Add button")
-                enabled: backend.buttons.length < 12
-                onClicked: if (backend.addButton(labelInput.text, commandInput.text)) {
-                    labelInput.clear()
-                    commandInput.clear()
+                Layout.preferredHeight: 220
+                clip: true
+                spacing: 4
+                model: backend.buttons
+                ScrollBar.vertical: ScrollBar {}
+                delegate: Rectangle {
+                    required property int index
+                    required property var modelData
+                    width: list.width
+                    height: 54
+                    color: "#252525"
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        Label { text: modelData.label; font.bold: true; Layout.preferredWidth: 120; elide: Text.ElideRight }
+                        Label { text: modelData.command; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                        ToolButton { text: "↑"; enabled: index > 0; onClicked: backend.moveButton(index, index - 1) }
+                        ToolButton { text: "↓"; enabled: index + 1 < list.count; onClicked: backend.moveButton(index, index + 1) }
+                        ToolButton { text: "×"; onClicked: backend.removeButton(index) }
+                    }
                 }
             }
-        }
-        RowLayout {
-            ComboBox {
-                id: statusKind
-                model: [qsTr("Internet"), qsTr("CPU temperature"), qsTr("Application")]
-            }
-            TextField { id: statusLabel; placeholderText: qsTr("Label"); maximumLength: 16 }
-            TextField {
-                id: statusArgument
-                Layout.fillWidth: true
-                enabled: statusKind.currentIndex === 2
-                placeholderText: qsTr("Process name, e.g. firefox")
-                maximumLength: 15
-            }
-            Button {
-                text: qsTr("Add status")
-                enabled: backend.buttons.length < 12
-                onClicked: if (backend.addStatus(["internet", "temperature", "process"][statusKind.currentIndex],
-                                                  statusLabel.text, statusArgument.text)) {
-                    statusLabel.clear()
-                    statusArgument.clear()
+            RowLayout {
+                TextField {
+                    id: labelInput
+                    Layout.preferredWidth: 160
+                    placeholderText: qsTr("Label")
+                    maximumLength: 16
+                }
+                TextField {
+                    id: commandInput
+                    Layout.fillWidth: true
+                    placeholderText: qsTr("Command, e.g. omarchy agent")
+                    maximumLength: 1024
+                }
+                Button {
+                    text: qsTr("Add button")
+                    enabled: backend.buttons.length < 12
+                    onClicked: if (backend.addButton(labelInput.text, commandInput.text)) {
+                        labelInput.clear()
+                        commandInput.clear()
+                    }
                 }
             }
-        }
-        RowLayout {
-            ComboBox {
-                id: widgetKind
-                model: [qsTr("CPU graph"), qsTr("Memory graph"), qsTr("Network graph"),
-                        qsTr("Disk graph"), qsTr("Battery")]
+            RowLayout {
+                ComboBox {
+                    id: statusKind
+                    model: [qsTr("Internet"), qsTr("CPU temperature"), qsTr("Application")]
+                }
+                TextField { id: statusLabel; placeholderText: qsTr("Label"); maximumLength: 16 }
+                TextField {
+                    id: statusArgument
+                    Layout.fillWidth: true
+                    enabled: statusKind.currentIndex === 2
+                    placeholderText: qsTr("Process name, e.g. firefox")
+                    maximumLength: 15
+                }
+                Button {
+                    text: qsTr("Add status")
+                    enabled: backend.buttons.length < 12
+                    onClicked: if (backend.addStatus(["internet", "temperature", "process"][statusKind.currentIndex],
+                                                      statusLabel.text, statusArgument.text)) {
+                        statusLabel.clear()
+                        statusArgument.clear()
+                    }
+                }
+            }
+            RowLayout {
+                ComboBox {
+                    id: widgetKind
+                    model: [qsTr("CPU graph"), qsTr("Memory graph"), qsTr("Network graph"),
+                            qsTr("Disk graph"), qsTr("Battery")]
+                    Layout.fillWidth: true
+                }
+                Button {
+                    text: qsTr("Add live widget")
+                    enabled: backend.buttons.length < 12
+                    onClicked: backend.addWidget(["cpu", "memory", "network", "disk", "battery"][widgetKind.currentIndex])
+                }
+            }
+            Label {
+                text: qsTr("Commands run as your user. Only use commands you trust.")
+                wrapMode: Text.Wrap
                 Layout.fillWidth: true
             }
-            Button {
-                text: qsTr("Add live widget")
-                enabled: backend.buttons.length < 12
-                onClicked: backend.addWidget(["cpu", "memory", "network", "disk", "battery"][widgetKind.currentIndex])
-            }
-        }
-        Label {
-            text: qsTr("Commands run as your user. Only use commands you trust.")
-            wrapMode: Text.Wrap
-            Layout.fillWidth: true
-        }
-        RowLayout {
-            Label { text: backend.message; Layout.fillWidth: true; wrapMode: Text.Wrap }
-            Button { text: qsTr("Restore original"); onClicked: restoreConfirm.open() }
-            Button { text: qsTr("Help (?)"); onClicked: help.open() }
-            Button {
-                text: qsTr("Apply layout")
-                enabled: backend.profiles.length > 0
-                highlighted: true
-                onClicked: applyConfirm.open()
+            RowLayout {
+                Label { text: backend.message; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                Button { text: qsTr("Restore original"); onClicked: restoreConfirm.open() }
+                Button { text: qsTr("Help (?)"); onClicked: help.open() }
+                Button {
+                    text: qsTr("Apply layout")
+                    objectName: "applyButton"
+                    enabled: backend.profiles.length > 0
+                    highlighted: true
+                    onClicked: applyConfirm.open()
+                }
             }
         }
     }
@@ -211,7 +225,7 @@ ApplicationWindow {
         modal: true
         standardButtons: Dialog.Yes | Dialog.No
         onAccepted: backend.deleteProfile()
-        Label { text: qsTr("This removes the selected saved layout."); wrapMode: Text.Wrap; width: 350 }
+        Label { text: qsTr("This removes the selected saved layout."); wrapMode: Text.Wrap; width: Math.min(350, root.width - 80) }
     }
     Dialog {
         id: applyConfirm
@@ -223,7 +237,7 @@ ApplicationWindow {
         Label {
             text: qsTr("This replaces the omarchy-glance configuration and saves a backup. Commands run as your user.")
             wrapMode: Text.Wrap
-            width: 390
+            width: Math.min(390, root.width - 80)
         }
     }
     Dialog {
@@ -236,7 +250,7 @@ ApplicationWindow {
         Label {
             text: qsTr("Restore the renderer configuration saved before the first apply.")
             wrapMode: Text.Wrap
-            width: 390
+            width: Math.min(390, root.width - 80)
         }
     }
     Dialog {

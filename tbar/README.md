@@ -66,6 +66,7 @@ Scény jsou v `~/.config/tbar/profiles.json` (respektuje se `XDG_CONFIG_HOME`).
 Obnovuje se přibližně po pěti sekundách pomocí `omarchy-glance preview`: údaje
 jsou skutečné, ale historie grafů je krátká, protože se každý snímek vzorkuje
 znovu. Stavové příkazy se při náhledu spouštějí; tlačítka náhledu nejsou aktivní.
+V menším okně lze obsahem editoru posouvat; při úzkém okně i vodorovně.
 Při prvním použití editor zaznamená původní konfiguraci rendereru v
 `~/.config/tbar/original-renderer.json` a před každým přepsáním existujícího
 `~/.config/omarchy-glance/touchbar.json` vytvoří další zálohu vedle něj.

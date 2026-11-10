@@ -114,3 +114,5 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   exportované editorem. Připraveny upravitelné ukázky `Work`, `Monitor` a
   `IT Demo`, živé widgety a izolovaný průběžný náhled; nové scény a náhled
   ještě vyžadují uživatelské ověření.
+- 2026-11-10: uživatel potvrdil funkční grafy. Při práci v děleném okně
+  požádal o menší okno nebo posouvání obsahu editoru.
