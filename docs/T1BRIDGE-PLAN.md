@@ -79,3 +79,12 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   bez chyb (hláška o chybějícím stromu 7.2.11-arch1 se týká nepoužívaného jádra).
   Skupina `t1bridge` pro uživatele přidána přes `gpasswd` (`usermod` byl zabit).
   Restart zatím neproběhl.
+- 2026-11-10: po restartu Touch Bar ukazoval chybu `tiny-dfr crashed`. Příčina:
+  ručně vytvořená `/etc/systemd/system/tiny-dfr.service` (bez balíčku) soupeřila
+  s T1Bridge; vypnuta (`systemctl disable --now tiny-dfr.service`). Zapnuta
+  uživatelská `t1-touchbar.service`, restart `t1-touchbar-hw.service`.
+  Dále nainstalován volitelný `t1bridge-omarchy` 0.2.2 (hlasitost, jas, HUD popupy
+  v Omarchy) a jednorázově spuštěno `/usr/lib/t1bridge-omarchy/session-start --autostart`.
+  Výsledek: Touch Bar zobrazuje vestavěné rozložení, ovládání funguje a popup
+  Omarchy se zobrazuje. Zbývá ověřit: zvuk, Esc, přežití dalšího restartu,
+  uspání (upstream hlásí problém), `sudo t1bridge status`, `omarchy-glance`/`tbar`.
