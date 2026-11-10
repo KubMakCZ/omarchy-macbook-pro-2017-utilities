@@ -96,4 +96,4 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   uspěl, poté znovu spuštěn oficiální session-start helper. Automatický start
   provideru při dalším přihlášení a popupy po restartu je potřeba ověřit.
   Poté uživatel potvrdil funkční popup, reakci mikrofonu v audio panelu a zvuk
-  z YouTube ve Firefoxu. Esc zatím nepotvrzeno.
+  z YouTube ve Firefoxu a funkční Esc.
