@@ -88,3 +88,11 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   Výsledek: Touch Bar zobrazuje vestavěné rozložení, ovládání funguje a popup
   Omarchy se zobrazuje. Zbývá ověřit: zvuk, Esc, přežití dalšího restartu,
   uspání (upstream hlásí problém), `sudo t1bridge status`, `omarchy-glance`/`tbar`.
+- 2026-11-10: po dalším restartu uživatel potvrdil zobrazení a reakci Touch Baru.
+  `t1bridge status` hlásí USB konfiguraci selected, DRM, NCM, xART, broker a
+  Touch Bar ready; keybag not-enrolled a xART admission diagnostics unavailable.
+  Hardware i uživatelská služba jsou aktivní, tiny-dfr vypnutý a Wi-Fi připojena.
+  Při startu se v logu objevil nedostupný desktop provider; jeho pozdější status
+  uspěl, poté znovu spuštěn oficiální session-start helper. Automatický start
+  provideru při dalším přihlášení a popupy po restartu je potřeba ověřit.
+  Zvukový výstup je rozpoznán, skutečné přehrávání a Esc zatím nepotvrzeny.
