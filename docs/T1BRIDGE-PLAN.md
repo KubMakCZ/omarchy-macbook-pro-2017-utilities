@@ -95,4 +95,5 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   Při startu se v logu objevil nedostupný desktop provider; jeho pozdější status
   uspěl, poté znovu spuštěn oficiální session-start helper. Automatický start
   provideru při dalším přihlášení a popupy po restartu je potřeba ověřit.
-  Zvukový výstup je rozpoznán, skutečné přehrávání a Esc zatím nepotvrzeny.
+  Poté uživatel potvrdil funkční popup, reakci mikrofonu v audio panelu a zvuk
+  z YouTube ve Firefoxu. Esc zatím nepotvrzeno.
