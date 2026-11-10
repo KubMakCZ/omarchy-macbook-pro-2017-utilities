@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
     if (argc > 1 && (QByteArray(argv[1]) == "check" || QByteArray(argv[1]) == "export"
                      || QByteArray(argv[1]) == "action"
                      || QByteArray(argv[1]) == "status"
+                     || QByteArray(argv[1]) == "sync-theme"
                      || QByteArray(argv[1]) == "--preview"))
         qputenv("QT_QPA_PLATFORM", "offscreen");
     QGuiApplication app(argc, argv);
@@ -33,6 +34,11 @@ int main(int argc, char **argv) {
     app.installTranslator(&desktop);
     Backend backend;
     const QStringList arguments = app.arguments();
+    if (arguments.size() == 2 && arguments[1] == "sync-theme") {
+        if (backend.syncTheme()) return 0;
+        QTextStream(stderr) << backend.message() << '\n';
+        return 1;
+    }
     if (arguments.size() == 5 && arguments[1] == "status") {
         const auto label = QByteArray::fromBase64Encoding(arguments[3].toLatin1(), QByteArray::AbortOnBase64DecodingErrors);
         const auto arg = QByteArray::fromBase64Encoding(arguments[4] == "-" ? QByteArray() : arguments[4].toLatin1(),

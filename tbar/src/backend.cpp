@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLockFile>
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QProcessEnvironment>
@@ -17,6 +18,29 @@
 
 namespace {
 const QStringList widgets{"cpu", "memory", "network", "disk", "battery"};
+const QStringList sections{"left", "center", "right"};
+
+QJsonObject themeColors() {
+    const QString state = qEnvironmentVariable("XDG_STATE_HOME", QDir::homePath() + "/.local/state");
+    QFile file(state + "/omarchy/current/theme/colors.toml");
+    QJsonObject colors;
+    if (!file.open(QIODevice::ReadOnly)) return colors;
+    const QString text = QString::fromUtf8(file.readAll());
+    const QList<QPair<QString, QString>> keys{{"lighter_background", "key"},
+                                              {"accent", "keyPressed"},
+                                              {"foreground", "text"}, {"red", "urgent"}};
+    for (const auto &key : keys) {
+        const QRegularExpression re("^\\s*" + key.first + "\\s*=\\s*[\"'](#[0-9a-fA-F]{6})[\"']",
+                                    QRegularExpression::MultilineOption);
+        const auto match = re.match(text);
+        if (match.hasMatch()) colors.insert(key.second, match.captured(1));
+    }
+    return colors;
+}
+
+QByteArray hash(const QByteArray &data) {
+    return QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex();
+}
 
 QJsonObject widget(const QString &kind, const QString &label) {
     return {{"kind", "widget"}, {"label", label}, {"command", kind}};
@@ -125,7 +149,8 @@ Backend::Backend(const QString &configHome, QObject *parent)
     for (const auto &item : profiles) {
         const auto obj = item.toObject();
         if (!item.isObject() || obj.value("name").toString().trimmed().isEmpty()
-            || !obj.value("buttons").isArray() || obj.value("buttons").toArray().size() > 12) {
+            || !obj.value("buttons").isArray() || obj.value("buttons").toArray().size() > 12
+            || (obj.contains("theme") && obj.value("theme").toString() != "auto")) {
             m_message = tr("Profiles are invalid. The file was not changed.");
             return;
         }
@@ -134,9 +159,16 @@ Backend::Backend(const QString &configHome, QObject *parent)
             const QString kind = obj.value("kind").toString("button");
             const QString argument = obj.value("command").toString();
             if (!button.isObject() || obj.value("label").toString().trimmed().isEmpty()
-                || !QStringList{"button", "internet", "temperature", "process", "widget"}.contains(kind)
+                || !QStringList{"button", "internet", "temperature", "process", "widget", "spacer"}.contains(kind)
                 || (kind == "button" && argument.trimmed().isEmpty())
                 || (kind == "widget" && !widgets.contains(argument))
+                || (obj.contains("section") && !sections.contains(obj.value("section").toString()))
+                || (obj.contains("width") && (!obj.value("width").isDouble()
+                    || obj.value("width").toInt() < 10 || obj.value("width").toInt() > 500))
+                || (obj.contains("style") && !QStringList{"dots", "bars"}.contains(obj.value("style").toString()))
+                || (obj.contains("interval") && (!obj.value("interval").isDouble()
+                    || obj.value("interval").toInt() < 1 || obj.value("interval").toInt() > 60))
+                || (obj.contains("temperature") && !obj.value("temperature").isBool())
                 || (kind == "process" && !QRegularExpression("^[A-Za-z0-9._+-]{1,15}$").match(argument).hasMatch())) {
                 m_message = tr("Profiles are invalid. The file was not changed.");
                 return;
@@ -161,6 +193,21 @@ QVariantList Backend::buttons() const {
 
 bool Backend::rendererAvailable() const {
     return !QStandardPaths::findExecutable("omarchy-glance").isEmpty();
+}
+
+bool Backend::themeAuto() const {
+    return m_selected >= 0 && m_selected < m_profiles.size()
+        && m_profiles[m_selected].toObject().value("theme").toString() == "auto";
+}
+
+bool Backend::setThemeAuto(bool enabled) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray updated = m_profiles;
+    QJsonObject profile = updated[m_selected].toObject();
+    if (enabled) profile.insert("theme", "auto");
+    else profile.remove("theme");
+    updated[m_selected] = profile;
+    return save(updated, m_selected);
 }
 
 void Backend::setPreviewFn(bool enabled) {
@@ -316,6 +363,41 @@ bool Backend::addWidget(const QString &kind) {
     return save(updated, m_selected);
 }
 
+bool Backend::addSpacer() {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray updated = m_profiles;
+    QJsonObject profile = updated[m_selected].toObject();
+    QJsonArray items = profile.value("buttons").toArray();
+    if (items.size() >= 12) return fail(tr("A profile can have at most 12 items."));
+    items.append(QJsonObject{{"kind", "spacer"}, {"label", "Spacer"}, {"command", ""}, {"width", 40}});
+    profile.insert("buttons", items);
+    updated[m_selected] = profile;
+    return save(updated, m_selected);
+}
+
+bool Backend::editItem(int index, const QString &section, int width,
+                       const QString &style, int interval, bool temperature) {
+    if (m_selected < 0 || m_selected >= m_profiles.size() || !sections.contains(section)
+        || width < 10 || width > 500 || !QStringList{"dots", "bars"}.contains(style)
+        || interval < 1 || interval > 60) return false;
+    QJsonArray updated = m_profiles;
+    QJsonObject profile = updated[m_selected].toObject();
+    QJsonArray items = profile.value("buttons").toArray();
+    if (index < 0 || index >= items.size()) return false;
+    QJsonObject item = items[index].toObject();
+    item.insert("section", section);
+    item.insert("width", width);
+    if (item.value("kind").toString() == "widget") {
+        item.insert("style", style);
+        item.insert("interval", interval);
+        if (item.value("command").toString() == "cpu") item.insert("temperature", temperature);
+    }
+    items[index] = item;
+    profile.insert("buttons", items);
+    updated[m_selected] = profile;
+    return save(updated, m_selected);
+}
+
 bool Backend::addExamples() {
     if (m_profiles.isEmpty()) return fail(tr("No valid profile is available."));
     const QJsonArray examples{
@@ -346,7 +428,7 @@ bool Backend::addExamples() {
 }
 
 QJsonObject Backend::rendererConfig() const {
-    QJsonArray left{QJsonObject{{"id", "glance.esc"}}};
+    QJsonArray left{QJsonObject{{"id", "glance.esc"}}}, center, right;
     int index = 0;
     for (const auto &item : buttons()) {
         const auto button = item.toMap();
@@ -355,34 +437,53 @@ QJsonObject Backend::rendererConfig() const {
         const QString kind = button.value("kind", "button").toString();
         const QString id = QString("tbar.%1").arg(index++);
         const QString encoded = QString::fromLatin1(button.value("command").toString().toUtf8().toBase64());
+        QJsonObject spec;
         if (kind == "widget") {
-            left.append(QJsonObject{{"id", "glance." + button.value("command").toString()}});
+            spec = {{"id", "glance." + button.value("command").toString()}};
+            if (button.contains("width")) spec.insert("graphWidth", button.value("width").toInt());
+            if (button.contains("style")) spec.insert("style", button.value("style").toString());
+            if (button.contains("interval")) spec.insert("interval", button.value("interval").toInt());
+            if (button.contains("temperature")) spec.insert("temperature", button.value("temperature").toBool());
+        } else if (kind == "spacer") {
+            spec = {{"id", "glance.spacer"}, {"size", button.value("width", 40).toInt()}};
         } else if (kind == "button") {
             const QString command = QString("'%1' action %2").arg(binary, encoded);
-            left.append(QJsonObject{{"id", id}, {"type", "button"},
+            spec = QJsonObject{{"id", id}, {"type", "button"},
                                     {"label", button.value("label").toString()},
-                                    {"exec", command}, {"width", 150}});
+                                    {"exec", command}, {"width", button.value("width", 150).toInt()}};
         } else {
             const QString label = QString::fromLatin1(button.value("label").toString().toUtf8().toBase64());
             const QString arg = encoded.isEmpty() ? "-" : encoded;
-            left.append(QJsonObject{{"id", id}, {"type", "command"}, {"width", 150},
+            spec = QJsonObject{{"id", id}, {"type", "command"}, {"width", button.value("width", 150).toInt()},
                                     {"interval", 5}, {"exec", QString("'%1' status %2 %3 %4")
-                                         .arg(binary, kind, label, arg)}});
+                                         .arg(binary, kind, label, arg)}};
         }
+        const QString section = button.value("section", "left").toString();
+        if (section == "center") center.append(spec);
+        else if (section == "right") right.append(spec);
+        else left.append(spec);
     }
     QJsonArray fn{QJsonObject{{"id", "glance.esc"}}};
     for (int i = 1; i <= 12; ++i)
         fn.append(QJsonObject{{"id", QString("tbar.f%1").arg(i)}, {"type", "button"},
                               {"label", QString("F%1").arg(i)}, {"key", QString("f%1").arg(i)},
                               {"width", 140}});
-    return {{"version", 1}, {"layers", QJsonObject{
-        {"default", QJsonObject{{"left", left}}},
+    QJsonObject result{{"version", 1}, {"layers", QJsonObject{
+        {"default", QJsonObject{{"left", left}, {"center", center}, {"right", right}}},
         {"fn", QJsonObject{{"left", fn}}}
     }}};
+    if (themeAuto()) {
+        result.insert("tbar", QJsonObject{{"theme", "auto"}});
+        result.insert("colors", themeColors());
+    }
+    return result;
 }
 
 bool Backend::apply() {
     if (m_profiles.isEmpty()) return fail(tr("No valid profile is available."));
+    if (!QDir().mkpath(m_home + "/tbar")) return fail(tr("Could not create the configuration directory."));
+    QLockFile lock(m_home + "/tbar/renderer.lock");
+    if (!lock.tryLock(1000)) return fail(tr("The renderer configuration is busy."));
     const QString path = m_home + "/omarchy-glance/touchbar.json";
     const QString snapshotPath = m_home + "/tbar/original-renderer.json";
     if (QFileInfo(path).isSymLink())
@@ -423,7 +524,7 @@ bool Backend::apply() {
     if (!writeJson(path, config, &error))
         return fail(tr("Could not apply the layout: %1").arg(error));
     snapshot.insert("appliedSha256", QString::fromLatin1(
-        QCryptographicHash::hash(QJsonDocument(config).toJson(), QCryptographicHash::Sha256).toHex()));
+        hash(QJsonDocument(config).toJson())));
     if (!writeJson(snapshotPath, snapshot, &error))
         return fail(tr("Layout applied, but the original backup could not be updated: %1").arg(error));
     setMessage(tr("Layout saved for omarchy-glance. Hardware support is required."));
@@ -431,6 +532,9 @@ bool Backend::apply() {
 }
 
 bool Backend::restoreOriginal() {
+    if (!QDir().mkpath(m_home + "/tbar")) return fail(tr("Could not create the configuration directory."));
+    QLockFile lock(m_home + "/tbar/renderer.lock");
+    if (!lock.tryLock(1000)) return fail(tr("The renderer configuration is busy."));
     const QString path = m_home + "/omarchy-glance/touchbar.json";
     const QString snapshotPath = m_home + "/tbar/original-renderer.json";
     if (QFileInfo(path).isSymLink() || QFileInfo(snapshotPath).isSymLink())
@@ -439,11 +543,11 @@ bool Backend::restoreOriginal() {
     if (!snapshotFile.open(QIODevice::ReadOnly) || !current.open(QIODevice::ReadOnly))
         return fail(tr("No restorable original layout was found."));
     const auto snapshot = QJsonDocument::fromJson(snapshotFile.readAll()).object();
-    const auto hash = QCryptographicHash::hash(current.readAll(), QCryptographicHash::Sha256).toHex();
+    const auto currentHash = hash(current.readAll());
     current.close();
     if (!validSnapshot(snapshot))
         return fail(tr("The original layout backup is invalid."));
-    if (snapshot.value("appliedSha256").toString().toLatin1() != hash)
+    if (snapshot.value("appliedSha256").toString().toLatin1() != currentHash)
         return fail(tr("The current layout changed outside this app; it was not overwritten."));
     if (snapshot.value("existed").toBool()) {
         const auto data = QByteArray::fromBase64Encoding(snapshot.value("data").toString().toLatin1(),
@@ -456,5 +560,42 @@ bool Backend::restoreOriginal() {
         return fail(tr("Could not restore the original layout."));
     }
     setMessage(tr("Original renderer configuration restored."));
+    return true;
+}
+
+bool Backend::syncTheme() {
+    const QString path = m_home + "/omarchy-glance/touchbar.json";
+    const QString snapshotPath = m_home + "/tbar/original-renderer.json";
+    if (!QFile::exists(path)) return true;
+    if (QFileInfo(path).isSymLink() || QFileInfo(snapshotPath).isSymLink())
+        return fail(tr("The target is a symbolic link; refusing to overwrite it."));
+    if (!QDir().mkpath(m_home + "/tbar")) return fail(tr("Could not create the configuration directory."));
+    QLockFile lock(m_home + "/tbar/renderer.lock");
+    if (!lock.tryLock(1000)) return fail(tr("The renderer configuration is busy."));
+    QFile current(path);
+    if (!current.open(QIODevice::ReadOnly)) return fail(tr("Could not read the renderer configuration."));
+    const QByteArray data = current.readAll();
+    current.close();
+    QJsonParseError error;
+    QJsonObject config = QJsonDocument::fromJson(data, &error).object();
+    if (error.error != QJsonParseError::NoError) return fail(tr("The renderer configuration is invalid."));
+    if (config.value("tbar").toObject().value("theme").toString() != "auto") return true;
+    QFile snapshotFile(snapshotPath);
+    if (!snapshotFile.open(QIODevice::ReadOnly)) return fail(tr("Could not read the original layout backup."));
+    QJsonObject snapshot = QJsonDocument::fromJson(snapshotFile.readAll()).object();
+    snapshotFile.close();
+    if (!validSnapshot(snapshot)) return fail(tr("The original layout backup is invalid."));
+    if (snapshot.value("appliedSha256").toString().toLatin1() != hash(data))
+        return fail(tr("The current layout changed outside this app; it was not overwritten."));
+    const QJsonObject colors = themeColors();
+    if (colors.isEmpty()) return fail(tr("Could not read the Omarchy theme colors."));
+    if (config.value("colors").toObject() == colors) return true;
+    config.insert("colors", colors);
+    QString writeError;
+    if (!writeJson(path, config, &writeError))
+        return fail(tr("Could not apply the layout: %1").arg(writeError));
+    snapshot.insert("appliedSha256", QString::fromLatin1(hash(QJsonDocument(config).toJson())));
+    if (!writeJson(snapshotPath, snapshot, &writeError))
+        return fail(tr("Layout applied, but the original backup could not be updated: %1").arg(writeError));
     return true;
 }

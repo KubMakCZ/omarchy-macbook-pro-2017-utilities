@@ -18,6 +18,8 @@ private slots:
     void invalidSnapshotIsPreserved();
     void widgetsAndExamples();
     void previewUsesTemporaryConfig();
+    void positionsAndGraphOptions();
+    void themedLayoutFollowsChangesSafely();
 };
 
 void BackendTests::profilesAndRenderer() {
@@ -209,6 +211,73 @@ void BackendTests::previewUsesTemporaryConfig() {
     QTRY_VERIFY_WITH_TIMEOUT(readFile(image + ".capture").contains("glance.cpu"), 5000);
     model.setPreviewFn(true);
     QTRY_COMPARE_WITH_TIMEOUT(readFile(image + ".layer"), QByteArray("fn"), 5000);
+}
+
+void BackendTests::positionsAndGraphOptions() {
+    QTemporaryDir tmp;
+    Backend model(tmp.path());
+    QVERIFY(model.addProfile("Layout"));
+    QVERIFY(model.addButton("Keys", "true"));
+    QVERIFY(model.addWidget("cpu"));
+    QVERIFY(model.addSpacer());
+    QVERIFY(model.editItem(0, "center", 200, "dots", 1, false));
+    QVERIFY(model.editItem(1, "right", 130, "bars", 3, true));
+    QVERIFY(model.editItem(2, "left", 60, "dots", 1, false));
+    QVERIFY(!model.editItem(0, "invalid", 100, "dots", 1, false));
+    const auto layers = model.rendererConfig().value("layers").toObject();
+    const auto main = layers.value("default").toObject();
+    QCOMPARE(main.value("left").toArray().size(), 2);
+    QCOMPARE(main.value("left").toArray()[1].toObject().value("size").toInt(), 60);
+    QCOMPARE(main.value("center").toArray()[0].toObject().value("width").toInt(), 200);
+    const auto graph = main.value("right").toArray()[0].toObject();
+    QCOMPARE(graph.value("id").toString(), QString("glance.cpu"));
+    QCOMPARE(graph.value("graphWidth").toInt(), 130);
+    QCOMPARE(graph.value("style").toString(), QString("bars"));
+    QCOMPARE(graph.value("interval").toInt(), 3);
+    QVERIFY(graph.value("temperature").toBool());
+    QCOMPARE(layers.value("fn").toObject().value("left").toArray()[0].toObject().value("id").toString(),
+             QString("glance.esc"));
+    Backend reload(tmp.path());
+    QCOMPARE(reload.rendererConfig(), model.rendererConfig());
+}
+
+void BackendTests::themedLayoutFollowsChangesSafely() {
+    QTemporaryDir tmp;
+    const QByteArray oldState = qgetenv("XDG_STATE_HOME");
+    const bool hadState = qEnvironmentVariableIsSet("XDG_STATE_HOME");
+    const auto restoreState = qScopeGuard([&] {
+        if (hadState) qputenv("XDG_STATE_HOME", oldState);
+        else qunsetenv("XDG_STATE_HOME");
+    });
+    qputenv("XDG_STATE_HOME", tmp.path().toUtf8());
+    QVERIFY(QDir().mkpath(tmp.path() + "/omarchy/current/theme"));
+    QFile theme(tmp.path() + "/omarchy/current/theme/colors.toml");
+    QVERIFY(theme.open(QIODevice::WriteOnly));
+    theme.write("accent = \"#123456\"\nlighter_background = \"#202020\"\nforeground = \"#eeeeee\"\n");
+    theme.close();
+    Backend model(tmp.path() + "/config");
+    QVERIFY(model.setThemeAuto(true));
+    QVERIFY(model.apply());
+    const QString path = tmp.path() + "/config/omarchy-glance/touchbar.json";
+    QFile config(path);
+    QVERIFY(theme.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    theme.write("accent = \"#abcdef\"\nlighter_background = \"#303030\"\nforeground = \"#ffffff\"\n");
+    theme.close();
+    QVERIFY(model.syncTheme());
+    QVERIFY(config.open(QIODevice::ReadOnly));
+    const auto changed = QJsonDocument::fromJson(config.readAll()).object();
+    config.close();
+    QCOMPARE(changed.value("colors").toObject().value("keyPressed").toString(), QString("#abcdef"));
+    QVERIFY(model.restoreOriginal());
+    QVERIFY(!QFile::exists(path));
+    QVERIFY(model.apply());
+    QVERIFY(config.open(QIODevice::Append));
+    config.write(" ");
+    config.close();
+    QVERIFY(!model.syncTheme());
+    QVERIFY(!model.restoreOriginal());
+    QVERIFY(config.open(QIODevice::ReadOnly));
+    QVERIFY(config.readAll().endsWith(" "));
 }
 
 QTEST_GUILESS_MAIN(BackendTests)

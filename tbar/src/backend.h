@@ -19,6 +19,7 @@ class Backend : public QObject {
     Q_PROPERTY(QUrl preview READ preview NOTIFY previewChanged)
     Q_PROPERTY(QString previewError READ previewError NOTIFY previewChanged)
     Q_PROPERTY(bool previewFn READ previewFn WRITE setPreviewFn NOTIFY previewChanged)
+    Q_PROPERTY(bool themeAuto READ themeAuto NOTIFY changed)
 
 public:
     explicit Backend(const QString &configHome = {}, QObject *parent = nullptr);
@@ -30,6 +31,7 @@ public:
     QUrl preview() const { return m_preview; }
     QString previewError() const { return m_previewError; }
     bool previewFn() const { return m_previewFn; }
+    bool themeAuto() const;
     void setPreviewFn(bool enabled);
     Q_INVOKABLE void startPreview();
     Q_INVOKABLE bool select(int index);
@@ -39,10 +41,15 @@ public:
     Q_INVOKABLE bool addStatus(const QString &kind, const QString &label, const QString &argument);
     Q_INVOKABLE bool addWidget(const QString &kind);
     Q_INVOKABLE bool addExamples();
+    Q_INVOKABLE bool addSpacer();
+    Q_INVOKABLE bool editItem(int index, const QString &section, int width,
+                              const QString &style, int interval, bool temperature);
+    Q_INVOKABLE bool setThemeAuto(bool enabled);
     Q_INVOKABLE bool removeButton(int index);
     Q_INVOKABLE bool moveButton(int from, int to);
     Q_INVOKABLE bool apply();
     Q_INVOKABLE bool restoreOriginal();
+    bool syncTheme();
     QJsonObject rendererConfig() const;
 
 signals:

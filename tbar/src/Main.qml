@@ -80,6 +80,11 @@ ApplicationWindow {
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
             }
+            CheckBox {
+                text: qsTr("Follow Omarchy theme for buttons")
+                checked: backend.themeAuto
+                onClicked: backend.setThemeAuto(checked)
+            }
             RowLayout {
                 Label { text: qsTr("Live preview") }
                 CheckBox {
@@ -125,6 +130,11 @@ ApplicationWindow {
                         anchors.margins: 8
                         Label { text: modelData.label; font.bold: true; Layout.preferredWidth: 120; elide: Text.ElideRight }
                         Label { text: modelData.command; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                        Label {
+                            text: modelData.section === "center" ? qsTr("Center")
+                                : modelData.section === "right" ? qsTr("Right") : qsTr("Left")
+                        }
+                        ToolButton { text: qsTr("Edit"); onClicked: itemSettings.openItem(index, modelData) }
                         ToolButton { text: "↑"; enabled: index > 0; onClicked: backend.moveButton(index, index - 1) }
                         ToolButton { text: "↓"; enabled: index + 1 < list.count; onClicked: backend.moveButton(index, index + 1) }
                         ToolButton { text: "×"; onClicked: backend.removeButton(index) }
@@ -188,6 +198,11 @@ ApplicationWindow {
                     enabled: backend.buttons.length < 12
                     onClicked: backend.addWidget(["cpu", "memory", "network", "disk", "battery"][widgetKind.currentIndex])
                 }
+                Button {
+                    text: qsTr("Add spacer")
+                    enabled: backend.buttons.length < 12
+                    onClicked: backend.addSpacer()
+                }
             }
             Label {
                 text: qsTr("Commands run as your user. Only use commands you trust.")
@@ -209,6 +224,69 @@ ApplicationWindow {
         }
     }
 
+    Dialog {
+        id: itemSettings
+        objectName: "itemSettings"
+        anchors.centerIn: parent
+        implicitWidth: Math.min(450, root.width - 24)
+        title: qsTr("Edit item")
+        modal: true
+        background: Rectangle { color: root.color }
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        property int itemIndex: -1
+        property bool graph: false
+        property bool cpu: false
+        function openItem(index, item) {
+            itemIndex = index
+            graph = item.kind === "widget"
+            cpu = graph && item.command === "cpu"
+            itemSection.currentIndex = item.section === "center" ? 1 : item.section === "right" ? 2 : 0
+            itemWidth.value = item.width === undefined ? (graph ? 50 : item.kind === "spacer" ? 40 : 150) : item.width
+            itemStyle.currentIndex = item.style === "bars" ? 1 : 0
+            itemInterval.value = item.interval === undefined ? 1 : item.interval
+            itemTemperature.checked = item.temperature === true
+            open()
+        }
+        onAccepted: backend.editItem(itemIndex, ["left", "center", "right"][itemSection.currentIndex],
+                                     itemWidth.value, ["dots", "bars"][itemStyle.currentIndex],
+                                     itemInterval.value, itemTemperature.checked)
+        ScrollView {
+            id: settingsScroll
+            implicitWidth: Math.min(390, root.width - 80)
+            implicitHeight: Math.min(settingsContent.implicitHeight, root.height - 170)
+            contentWidth: Math.min(390, root.width - 80)
+            contentHeight: settingsContent.implicitHeight
+            clip: true
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            ColumnLayout {
+                id: settingsContent
+                width: Math.min(390, root.width - 80)
+                RowLayout {
+                    Label { text: qsTr("Position") }
+                    ComboBox {
+                        id: itemSection
+                        Layout.fillWidth: true
+                        model: [qsTr("Left"), qsTr("Center"), qsTr("Right")]
+                    }
+                }
+                RowLayout {
+                    Label { text: itemSettings.graph ? qsTr("Graph width (px)") : qsTr("Width (px)") }
+                    SpinBox { id: itemWidth; from: 10; to: 500; editable: true }
+                }
+                RowLayout {
+                    visible: itemSettings.graph
+                    Label { text: qsTr("Graph style") }
+                    ComboBox { id: itemStyle; model: [qsTr("Dots"), qsTr("Bars")] }
+                }
+                RowLayout {
+                    visible: itemSettings.graph
+                    Label { text: qsTr("Update interval (s)") }
+                    SpinBox { id: itemInterval; from: 1; to: 60; editable: true }
+                }
+                CheckBox { id: itemTemperature; visible: itemSettings.cpu; text: qsTr("Show CPU temperature") }
+            }
+        }
+    }
     Dialog {
         id: createProfile
         anchors.centerIn: parent

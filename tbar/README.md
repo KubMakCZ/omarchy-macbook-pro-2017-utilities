@@ -18,7 +18,11 @@ bash bin/build
 Je potřeba qmake6, make, C++ kompilátor a Qt 6 včetně Qt Quick Controls.
 Pro případnou lokální instalaci do nabídky aplikací je připravený Arch balíček:
 `bash bin/install` zavolá `makepkg -si` a může požádat o instalaci závislostí
-a heslo. Projektová licence
+a heslo. Nainstaluje také hook `tbar-theme-sync` pro změnu tématu, pokud ještě
+neexistuje. Při instalaci samotného balíčku jej lze přidat příkazem
+`omarchy hook install theme-set /usr/share/tbar/tbar-theme-sync`; před spuštěním
+zkontroluj, že stejnojmenný hook ještě neexistuje (příkaz jej přepisuje).
+Projektová licence
 dosud nebyla zvolena; balíček označuje vlastní kód jako nelicencovaný a není
 tím uděleno oprávnění k dalšímu šíření.
 
@@ -50,6 +54,19 @@ a stav baterie. `IT Demo` kombinuje zkratky s grafy CPU, RAM, sítě a baterií.
 Živé widgety lze přidávat také jednotlivě. Grafy reagují na skutečnou zátěž;
 dostupnost údajů závisí na hardwaru a rendereru.
 
+U položky klikni na „Upravit“ a vyber levou, střední nebo pravou část a šířku;
+u grafů navíc styl teček či sloupců, interval a u CPU teplotu. „Přidat mezeru“
+vloží prázdné místo s nastavitelnou šířkou. Escape zůstává vlevo. Renderer
+umisťuje každou část nezávisle: pokud jsou příliš široké, mohou se překrýt;
+zkontroluj výsledek v náhledu. Skutečné CSS `space-between`, `space-around`
+a `space-evenly` renderer nepodporuje.
+
+Volba „Barvy tlačítek podle tématu Omarchy“ platí pro celou vybranou scénu
+včetně Esc a dalších tlačítek. Po použití scény hook při změně tématu bezpečně
+aktualizuje barvy; nezasáhne do konfigurace změněné mimo editor. Grafy používají
+výchozí barvy tématu btop, které renderer průběžně sleduje. Automatická změna
+barev tlačítek vyžaduje nainstalovaný hook, není vázaná na otevřený editor.
+
 Pro ukázku v IT komunitě vyber `IT Demo`, potvrď „Použít rozložení“ a ukaž,
 jak se při práci mění grafy. Tlačítko `Keys` otevře přehled zkratek; výběr
 jiné scény v editoru a její použití ukáže přizpůsobení. Než začneš nahrávat
@@ -62,6 +79,33 @@ nebo sdílet obrazovku, zkontroluj, zda neobsahuje osobní údaje.
 | `Esc` | Zavření dialogu |
 
 Scény jsou v `~/.config/tbar/profiles.json` (respektuje se `XDG_CONFIG_HOME`).
+Soubor je JSON a lze jej číst například pomocí AI. Před ručními úpravami jej
+zálohuj a zavři editor; příkazy z neznámých zdrojů nespouštěj bez kontroly.
+Příklad položek scény (vynechaná `section` znamená `left`):
+
+```json
+{
+  "name": "Demo",
+  "theme": "auto",
+  "buttons": [
+    { "label": "Keys", "command": "omarchy menu keybindings", "section": "left", "width": 150 },
+    { "kind": "spacer", "label": "Spacer", "command": "", "section": "center", "width": 40 },
+    { "kind": "widget", "label": "CPU", "command": "cpu", "section": "right", "width": 100,
+      "style": "bars", "interval": 1, "temperature": true }
+  ]
+}
+```
+
+`width` u grafu znamená šířku samotného grafu, ne celé položky. Dostupné
+hodnoty `section` jsou `left`, `center`, `right`; `style` je `dots` nebo
+`bars`. Úplný soubor obsahuje `version`, `selected` a pole `profiles`.
+Položky bez `kind` jsou tlačítka se shellovým příkazem v `command`. Pro
+`kind: "widget"` je `command` jeden z `cpu`, `memory`, `network`, `disk`,
+`battery`; `width` je 10–500 px a `interval` 1–60 sekund. Teplotu podporuje
+CPU. `kind: "spacer"` má šířku v `width`. Stavové položky mají `kind`
+`internet`, `temperature` nebo `process`; u posledního je v `command` přesný
+název procesu (1–15 znaků: písmena, číslice, `.`, `_`, `+`, `-`).
+Scéna obsahuje nejvýše 12 položek; výchozí `Esc` a vrstvu Fn doplňuje editor.
 Živý náhled zobrazuje vybranou scénu i volitelnou vrstvu Fn bez jejího použití.
 Obnovuje se přibližně po pěti sekundách pomocí `omarchy-glance preview`: údaje
 jsou skutečné, ale historie grafů je krátká, protože se každý snímek vzorkuje
