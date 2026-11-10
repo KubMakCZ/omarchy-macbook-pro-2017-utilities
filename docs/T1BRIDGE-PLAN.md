@@ -53,3 +53,7 @@ dostupný, nebo obnovovací USB. Doplň sem skutečný postup po vyzkoušení.
 - 2026-11-10: přečten postup upstreamu; zjištěno, že `sudo` vyžaduje heslo,
   takže kroky s oprávněním správce musí proběhnout v terminálu uživatele.
   Nic v systému nebylo změněno.
+- 2026-11-10: USB oprava ověřena po restartu. Záloha Apple EFI (`/dev/nvme0n1p1`,
+  300 MiB) uložena na externí FAT32 USB; sha256 oddílu i obrazu shodný
+  (`89f25a2c…b65e1`), obraz po připojení read-only obsahuje `FDRData`,
+  `combined.memboot`, `version.plist`. Obraz není v repozitáři.
