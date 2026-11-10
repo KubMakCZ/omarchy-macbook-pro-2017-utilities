@@ -44,9 +44,23 @@ před použitím ověř aktuální dokumentaci upstreamu.
 
 ## Návrat zpět
 
-Zatím neověřeno. Před krokem 4 si poznamenej `pacman -Q` výstup, nech nainstalované
-původní balíčky jádra a v případě problému použij Omarchy snapshot, pokud je
-dostupný, nebo obnovovací USB. Doplň sem skutečný postup po vyzkoušení.
+Provedeno na tomto stroji (stav před restartem): balíčky `t1bridge` a
+`t1bridge-dkms` 0.1.12, služby `t1-touchbar-hw.service`, `t1-touchid-auth.socket`,
+`t1bridge-fingerprint.socket` zapnuty, `omarchy-mbp-touchbar.service` vypnuta,
+`/etc/modules-load.d/touchbar.conf` přejmenován na `.disabled-t1bridge`.
+Seznam balíčků před změnou: `~/pacman-Q-before-t1bridge.txt`.
+
+Návrat na firmwarový Touch Bar (nevyzkoušeno, připraveno):
+
+```bash
+sudo systemctl disable t1-touchbar-hw.service t1-touchid-auth.socket t1bridge-fingerprint.socket
+sudo mv /etc/modules-load.d/touchbar.conf.disabled-t1bridge /etc/modules-load.d/touchbar.conf
+sudo systemctl enable omarchy-mbp-touchbar.service
+sudo pacman -Rns t1bridge t1bridge-dkms
+```
+
+Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
+`omarchy update`), případně obnovovací USB. Záloha Apple EFI je mimo repozitář.
 
 ## Deník
 
@@ -57,3 +71,11 @@ dostupný, nebo obnovovací USB. Doplň sem skutečný postup po vyzkoušení.
   300 MiB) uložena na externí FAT32 USB; sha256 oddílu i obrazu shodný
   (`89f25a2c…b65e1`), obraz po připojení read-only obsahuje `FDRData`,
   `combined.memboot`, `version.plist`. Obraz není v repozitáři.
+- 2026-11-10: `omarchy update` (jádro beze změny 7.2.15-1). Přidán klíč
+  `35B166F7…D371` (otisk ověřen) a repozitář `[standardagents]` (záloha
+  `/etc/pacman.conf.bak-t1bridge`); databáze repozitáře stažena ručně, ne `-Sy`.
+  Nainstalováno `t1bridge`, `t1bridge-dkms` + závislosti (`iio-sensor-proxy`,
+  `libqmi` aj.). DKMS `t1_cfgsel` sestaven pro 7.2.15-1-omarchy, UKI přegenerováno
+  bez chyb (hláška o chybějícím stromu 7.2.11-arch1 se týká nepoužívaného jádra).
+  Skupina `t1bridge` pro uživatele přidána přes `gpasswd` (`usermod` byl zabit).
+  Restart zatím neproběhl.
