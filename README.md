@@ -100,3 +100,34 @@ proto nemusí Touch Bar fungovat. Chování po restartu a uspání je třeba ov�
 
 Podrobnosti o Wi-Fi, zvuku, Touch Baru a uspávání se mohou měnit podle verze
 jádra; před zásahem ověř aktuální [ArchWiki](https://wiki.archlinux.org/title/MacBookPro14,2).
+
+## USB zařízení se po odpojení znovu neobjeví
+
+Na tomto MacBooku se po odpojení flešek přestala nová USB zařízení hlásit
+jádru. `udiskie` přitom běžel a staré přípojné body zmizely. Dočasné vypnutí
+runtime uspávání obou externích USB řadičů umožnilo opětovné připojení;
+jde o předběžně ověřený workaround, nikoli potvrzenou příčinu závady.
+Systém nyní při vložení flešku automaticky připojuje pomocí `udiskie`.
+
+Pro nastavení po každém startu (jen MacBookPro14,2 s odpovídajícími PCI
+řadiči) lze spustit:
+
+```bash
+sudo bash install-usb-power-service.sh
+systemctl status omarchy-mbp-usb-power.service --no-pager
+```
+
+Služba nastaví `power/control=on` u obou externích řadičů při startu.
+Může mírně zvýšit spotřebu; její účinek po restartu a uspání ještě není
+ověřený. Pokud nové USB zařízení nevidí ani `lsblk`, přeinstalace `udiskie`
+to sama nevyřeší.
+
+Návrat k automatickému uspávání (změna zmizí i restartem po vypnutí služby):
+
+```bash
+sudo systemctl disable --now omarchy-mbp-usb-power.service
+sudo sh -c 'echo auto > /sys/bus/pci/devices/0000:06:00.0/power/control; echo auto > /sys/bus/pci/devices/0000:7c:00.0/power/control'
+```
+
+Disky před odpojením vždy vysuň. Při hlášení nečistého FAT/exFAT zkontroluj
+souborový systém až po odpojení oddílu a před opravou zazálohuj důležitá data.

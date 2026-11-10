@@ -1,0 +1,13 @@
+[Unit]
+Description=Keep MacBookPro14,2 external USB controllers active
+After=systemd-udev-settle.service
+ConditionPathExists=/sys/bus/pci/devices/0000:06:00.0/power/control
+ConditionPathExists=/sys/bus/pci/devices/0000:7c:00.0/power/control
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/omarchy-mbp-usb-controllers-active
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
