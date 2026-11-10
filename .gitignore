@@ -1,0 +1,4 @@
+tbar/build/
+tbar/pkg/
+tbar/srcdir/
+tbar/*.pkg.tar.*

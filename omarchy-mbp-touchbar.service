@@ -1,0 +1,11 @@
+[Unit]
+Description=Bind MacBookPro14,2 Touch Bar interfaces
+After=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/omarchy-mbp-touchbar-rebind
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

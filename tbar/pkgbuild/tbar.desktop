@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Touch Bar Layouts
+Name[cs]=Rozložení Touch Baru
+Name[da]=Touch Bar-layouts
+Comment=Edit experimental Touch Bar layouts
+Comment[cs]=Upravovat experimentální rozložení Touch Baru
+Comment[da]=Rediger eksperimentelle Touch Bar-layouts
+Exec=tbar
+Icon=tbar
+Terminal=false
+Categories=Settings;Utility;

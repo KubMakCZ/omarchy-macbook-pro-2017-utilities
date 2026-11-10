@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+mkdir -p "$root/build/tests"
+cd "$root/build/tests"
+qmake6 "$root/tests/tbar_tests.pro"
+make -j"$(nproc)"
+QT_QPA_PLATFORM=offscreen ./tbar_tests
+bash "$root/tests/action_test.sh" "$root/build/tbar"

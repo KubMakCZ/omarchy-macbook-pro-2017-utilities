@@ -1,0 +1,21 @@
+pkgname=tbar
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Touch Bar scene editor for Omarchy (experimental)"
+arch=('x86_64')
+license=('LicenseRef-Unlicensed')
+depends=('qt6-base' 'qt6-declarative')
+makedepends=('base-devel')
+optdepends=('networkmanager: internet status' 'procps-ng: application status')
+
+build() {
+  cd "$srcdir"
+  qmake6 "$startdir/tbar.pro"
+  make
+}
+
+package() {
+  install -Dm755 "$srcdir/tbar" "$pkgdir/usr/bin/tbar"
+  install -Dm644 "$startdir/pkgbuild/tbar.desktop" "$pkgdir/usr/share/applications/tbar.desktop"
+  install -Dm644 "$startdir/pkgbuild/tbar.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/tbar.svg"
+}
