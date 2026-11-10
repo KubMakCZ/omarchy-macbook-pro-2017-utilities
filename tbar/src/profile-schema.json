@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tbar profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "buttons"],
+  "properties": {
+    "name": {"type": "string", "minLength": 1, "maxLength": 40, "pattern": "^\\S(?:[\\s\\S]*\\S)?$"},
+    "theme": {"const": "auto"},
+    "buttons": {
+      "type": "array", "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label"],
+        "properties": {
+          "label": {"type": "string", "minLength": 1, "maxLength": 16, "pattern": "^[^\\u0000\\r\\n]*\\S[^\\u0000\\r\\n]*$"},
+          "kind": {"enum": ["button", "internet", "temperature", "process", "widget", "spacer"]},
+          "command": {"type": "string", "maxLength": 1024, "pattern": "^[^\\u0000]*$"},
+          "section": {"enum": ["left", "center", "right"]},
+          "width": {"type": "integer", "minimum": 10, "maximum": 500},
+          "style": {"enum": ["dots", "bars"]},
+          "interval": {"type": "integer", "minimum": 1, "maximum": 60},
+          "temperature": {"type": "boolean"}
+        },
+        "allOf": [
+          {"if": {"properties": {"kind": {"const": "button"}}},
+           "then": {"required": ["command"], "properties": {"command": {"pattern": "\\S"}}}},
+          {"if": {"required": ["kind"], "properties": {"kind": {"const": "widget"}}},
+           "then": {"required": ["command"], "properties": {"command": {"enum": ["cpu", "memory", "network", "disk", "battery"]}}}},
+          {"if": {"required": ["kind"], "properties": {"kind": {"const": "process"}}},
+           "then": {"required": ["command"], "properties": {"command": {"pattern": "^[A-Za-z0-9._+-]{1,15}$"}}}},
+          {"if": {"anyOf": [{"required": ["style"]}, {"required": ["interval"]}]},
+           "then": {"required": ["kind"], "properties": {"kind": {"const": "widget"}}}},
+          {"if": {"required": ["temperature"]},
+           "then": {"required": ["kind", "command"], "properties": {"kind": {"const": "widget"}, "command": {"const": "cpu"}}}}
+        ]
+      }
+    }
+  }
+}

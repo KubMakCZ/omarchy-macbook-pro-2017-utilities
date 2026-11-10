@@ -7,3 +7,4 @@ qmake6 "$root/tests/tbar_tests.pro"
 make -j"$(nproc)"
 QT_QPA_PLATFORM=offscreen ./tbar_tests
 bash "$root/tests/action_test.sh" "$root/build/tbar"
+python3 "$root/tests/cli_test.py" "$root/build/tbar"

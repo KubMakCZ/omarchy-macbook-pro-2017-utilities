@@ -83,8 +83,8 @@ nebo sdílet obrazovku, zkontroluj, zda neobsahuje osobní údaje.
 | `Esc` | Zavření dialogu |
 
 Scény jsou v `~/.config/tbar/profiles.json` (respektuje se `XDG_CONFIG_HOME`).
-Soubor je JSON a lze jej číst například pomocí AI. Před ručními úpravami jej
-zálohuj a zavři editor; příkazy z neznámých zdrojů nespouštěj bez kontroly.
+Před ručními úpravami soubor zálohuj a zavři editor; příkazy z neznámých
+zdrojů nespouštěj bez kontroly.
 Příklad položek scény (vynechaná `section` znamená `left`):
 
 ```json
@@ -123,15 +123,45 @@ provedené mezitím mimo aplikaci. Zálohy nemaž, dokud je nepotřebuješ.
 Export obsahuje absolutní cestu ke spuštěnému `tbar`; po přesunu aplikace
 nebo instalaci balíčku je nutné scénu znovu použít.
 
-Pro kontrolu bez grafického prostředí:
+## CLI pro lidi a AI nástroje
+
+CLI funguje bez displeje. Výsledky vypisuje jako JSON na standardní výstup;
+s `--json` jsou chyby (kromě původního `check`) JSON na chybovém výstupu.
+Úspěch vrací kód 0, chyba nenulový. `FILE` obsahuje jednu scénu jako v příkladu
+výše, nikoli celý `profiles.json`; `-` čte standardní vstup. Validace ani
+import příkazy ve scéně nespouští.
 
 ```bash
-./build/tbar check
-./build/tbar export
-bash bin/test
+tbar list --json                  # seznam a aktuálně vybraná scéna
+tbar show "Demo" --json           # jediná scéna pro další úpravy
+tbar schema --json                # JSON Schema pro import
+tbar validate scena.json --json   # kontrola bez zápisu
+tbar import scena.json --json     # přidání, bez výběru a použití
+tbar import scena.json --replace --json  # nahrazení existující scény se zálohou
+tbar select "Demo" --json         # změní výběr, ale ne Touch Bar
+tbar export "Demo" --json         # renderer JSON bez použití
+tbar apply "Demo" --json          # použije na Touch Baru, nezmění výběr
+tbar restore --json               # bezpečné obnovení původního nastavení
+tbar skill install --json         # volitelný návod pro agenty, nepřepisuje existující
+tbar help
 ```
 
-`export` vypíše JSON, ale nezapíše konfiguraci. Export základní scény byl ověřen
+Příkaz `export` bez názvu zachovává původní chování a exportuje vybranou scénu;
+`check` nadále poskytuje původní přehled. Přepsání scény vyžaduje `--replace`
+a uloží zálohu `profiles.json.backup-*`. `apply` vytváří zálohy rendereru
+stejně jako grafické rozhraní. Scény mohou obsahovat **libovolné shellové
+příkazy**: před importem a použitím je vždy zkontroluj. Instalace agentního
+skill souboru je volitelná a probíhá až na výslovný příkaz do
+`~/.agents/skills/tbar/SKILL.md`.
+
+Nová verze editoru při souběžných úpravách detekuje změněný `profiles.json`
+a odmítne jej přepsat nebo použít zastaralou scénu. V takovém případě editor
+zavři a znovu otevři. Starší verze tuto ochranu nemají: před aktualizací
+a souběžným použitím CLI je zavři. Ruční zápisy jiných programů nejsou tímto
+zámkem koordinovány, proto při úpravách souboru editor i CLI zavři.
+
+Lokálně sestavený program lze místo `tbar` spustit jako `./build/tbar`;
+testy spouští `bash bin/test` po sestavení. Export základní scény byl ověřen
 s `omarchy-glance` revize `9c75e5e1d71cf583fe9b02c124cffa272fd7fcb1` na
 MacBookPro14,2. Renderer je samostatný projekt pod svou licencí.
 

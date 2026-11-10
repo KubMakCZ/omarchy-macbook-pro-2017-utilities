@@ -3,5 +3,7 @@
     <file>Main.qml</file>
     <file>i18n/cs.json</file>
     <file>i18n/da.json</file>
+    <file>profile-schema.json</file>
+    <file>agent-skill.md</file>
   </qresource>
 </RCC>

@@ -1,12 +1,17 @@
 pkgname=tbar
 pkgver=0.1.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Touch Bar scene editor for Omarchy (experimental)"
 arch=('x86_64')
 license=('LicenseRef-Unlicensed')
 depends=('qt6-base' 'qt6-declarative')
 makedepends=('base-devel')
 optdepends=('networkmanager: internet status' 'procps-ng: application status')
+
+# The source tree already has a src/ directory; makepkg must not clean it.
+if [[ $BUILDDIR -ef $startdir ]]; then
+  BUILDDIR="$startdir/build/package"
+fi
 
 build() {
   cd "$srcdir"

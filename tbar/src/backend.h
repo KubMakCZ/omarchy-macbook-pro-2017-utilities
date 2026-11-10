@@ -51,6 +51,12 @@ public:
     Q_INVOKABLE bool restoreOriginal();
     bool syncTheme();
     QJsonObject rendererConfig() const;
+    QJsonObject profile(const QString &name) const;
+    static QString validateProfile(const QJsonObject &profile);
+    bool importProfile(const QJsonObject &profile, bool replace);
+    bool selectProfile(const QString &name);
+    bool applyProfile(const QString &name);
+    QJsonObject exportProfile(const QString &name);
 
 signals:
     void changed();
@@ -58,7 +64,8 @@ signals:
     void previewChanged();
 
 private:
-    bool save(const QJsonArray &profiles, int selected);
+    bool save(const QJsonArray &profiles, int selected, bool backup = false);
+    bool profilesUnchanged();
     bool fail(const QString &message);
     void setMessage(const QString &message);
     void updatePreview();
@@ -76,4 +83,6 @@ private:
     bool m_previewStarted = false;
     int m_previewRevision = 0;
     int m_previewRequested = 0;
+    bool m_profilesOnDisk = false;
+    QByteArray m_profilesHash;
 };

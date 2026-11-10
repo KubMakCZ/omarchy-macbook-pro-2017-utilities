@@ -13,6 +13,7 @@
 #include <QStandardPaths>
 #include <QProcessEnvironment>
 #include <QRegularExpression>
+#include <QScopeGuard>
 #include <QUrlQuery>
 #include <QUuid>
 
@@ -138,7 +139,10 @@ Backend::Backend(const QString &configHome, QObject *parent)
         m_message = tr("Could not read profiles: %1").arg(file.errorString());
         return;
     }
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parse);
+    const QByteArray profileData = file.readAll();
+    m_profilesOnDisk = true;
+    m_profilesHash = hash(profileData);
+    const QJsonDocument doc = QJsonDocument::fromJson(profileData, &parse);
     const QJsonObject root = doc.object();
     if (parse.error != QJsonParseError::NoError || root.value("version").toInt() != 1
         || !root.value("profiles").isArray() || root.value("profiles").toArray().isEmpty()) {
@@ -259,18 +263,141 @@ bool Backend::fail(const QString &message) {
     return false;
 }
 
-bool Backend::save(const QJsonArray &profiles, int selected) {
+bool Backend::profilesUnchanged() {
+    const QString path = m_home + "/tbar/profiles.json";
+    if (QFileInfo(path).isSymLink())
+        return fail(tr("The target is a symbolic link; refusing to overwrite it."));
+    QFile current(path);
+    if (current.exists() != m_profilesOnDisk)
+        return fail(tr("Profiles changed outside this app; reload before saving."));
+    if (m_profilesOnDisk) {
+        if (!current.open(QIODevice::ReadOnly)) return fail(tr("Could not read profiles: %1").arg(current.errorString()));
+        const auto currentHash = hash(current.readAll());
+        current.close();
+        if (currentHash != m_profilesHash)
+            return fail(tr("Profiles changed outside this app; reload before saving."));
+    }
+    return true;
+}
+
+bool Backend::save(const QJsonArray &profiles, int selected, bool backup) {
     if (m_profiles.isEmpty())
         return fail(tr("Profiles are invalid. The file was not changed."));
+    const QString path = m_home + "/tbar/profiles.json";
+    if (!QDir().mkpath(m_home + "/tbar")) return fail(tr("Could not create the configuration directory."));
+    QLockFile lock(m_home + "/tbar/profiles.lock");
+    if (!lock.tryLock(1000)) return fail(tr("Profiles are busy."));
+    if (!profilesUnchanged()) return false;
+    if (backup && m_profilesOnDisk) {
+        const QString copy = path + ".backup-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
+        if (!QFile::copy(path, copy)) return fail(tr("Could not back up profiles."));
+    }
     QString error;
-    if (!writeJson(m_home + "/tbar/profiles.json",
-                   {{"version", 1}, {"selected", selected}, {"profiles", profiles}}, &error))
+    const QJsonObject data{{"version", 1}, {"selected", selected}, {"profiles", profiles}};
+    if (!writeJson(path, data, &error))
         return fail(tr("Could not save profiles: %1").arg(error));
+    m_profilesOnDisk = true;
+    m_profilesHash = hash(QJsonDocument(data).toJson());
     m_profiles = profiles;
     m_selected = selected;
     setMessage(tr("Profiles saved."));
     emit changed();
     return true;
+}
+
+QJsonObject Backend::profile(const QString &name) const {
+    for (const auto &value : m_profiles)
+        if (value.toObject().value("name").toString() == name) return value.toObject();
+    return {};
+}
+
+QString Backend::validateProfile(const QJsonObject &profile) {
+    const QStringList profileKeys{"name", "theme", "buttons"};
+    for (auto it = profile.begin(); it != profile.end(); ++it)
+        if (!profileKeys.contains(it.key())) return "Unknown profile field: " + it.key();
+    if (!profile.value("name").isString() || profile.value("name").toString().trimmed().isEmpty()
+        || profile.value("name").toString().size() > 40
+        || profile.value("name").toString() != profile.value("name").toString().trimmed())
+        return "name must be a non-empty trimmed string of at most 40 characters";
+    if (profile.contains("theme") && profile.value("theme").toString() != "auto")
+        return "theme must be auto when present";
+    if (!profile.value("buttons").isArray() || profile.value("buttons").toArray().size() > 12)
+        return "buttons must be an array of at most 12 items";
+    const QStringList itemKeys{"label", "kind", "command", "section", "width", "style", "interval", "temperature"};
+    int index = 0;
+    for (const auto &value : profile.value("buttons").toArray()) {
+        const QString prefix = QString("buttons[%1]: ").arg(index++);
+        if (!value.isObject()) return prefix + "must be an object";
+        const QJsonObject item = value.toObject();
+        for (auto it = item.begin(); it != item.end(); ++it)
+            if (!itemKeys.contains(it.key())) return prefix + "unknown field " + it.key();
+        if (!item.value("label").isString() || item.value("label").toString().trimmed().isEmpty()
+            || item.value("label").toString().contains('\0') || item.value("label").toString().contains('\n')
+            || item.value("label").toString().contains('\r')
+            || item.value("label").toString().size() > 16)
+            return prefix + "label must be a non-empty string of at most 16 characters";
+        if (item.contains("kind") && !item.value("kind").isString()) return prefix + "kind must be a string";
+        const QString kind = item.value("kind").toString("button");
+        if (!QStringList{"button", "internet", "temperature", "process", "widget", "spacer"}.contains(kind))
+            return prefix + "unknown kind";
+        if (item.contains("command") && !item.value("command").isString()) return prefix + "command must be a string";
+        const QString command = item.value("command").toString();
+        if (command.contains('\0') || command.size() > 1024 || (kind == "button" && command.trimmed().isEmpty()))
+            return prefix + "button command must be non-empty and at most 1024 characters";
+        if (kind == "widget" && !widgets.contains(command)) return prefix + "unknown widget";
+        if (kind == "process" && !QRegularExpression("^[A-Za-z0-9._+-]{1,15}$").match(command).hasMatch())
+            return prefix + "invalid process name";
+        if (item.contains("section") && !sections.contains(item.value("section").toString()))
+            return prefix + "section must be left, center or right";
+        if (item.contains("width") && (!item.value("width").isDouble()
+            || item.value("width").toInt() < 10 || item.value("width").toInt() > 500))
+            return prefix + "width must be an integer from 10 to 500";
+        if (item.contains("style") && (kind != "widget"
+            || !QStringList{"dots", "bars"}.contains(item.value("style").toString())))
+            return prefix + "style must be dots or bars on a widget";
+        if (item.contains("interval") && (kind != "widget" || !item.value("interval").isDouble()
+            || item.value("interval").toInt() < 1 || item.value("interval").toInt() > 60))
+            return prefix + "interval must be an integer from 1 to 60 on a widget";
+        if (item.contains("temperature") && (kind != "widget" || command != "cpu"
+            || !item.value("temperature").isBool()))
+            return prefix + "temperature must be boolean on a CPU widget";
+    }
+    return {};
+}
+
+bool Backend::importProfile(const QJsonObject &value, bool replace) {
+    const QString error = validateProfile(value);
+    if (!error.isEmpty()) return fail(error);
+    const QString name = value.value("name").toString();
+    const int index = profiles().indexOf(name);
+    if (index >= 0 && !replace) return fail(tr("Layout already exists; use --replace to overwrite it."));
+    QJsonArray updated = m_profiles;
+    if (index >= 0) updated[index] = value;
+    else updated.append(value);
+    return save(updated, m_selected, index >= 0);
+}
+
+bool Backend::selectProfile(const QString &name) {
+    const int index = profiles().indexOf(name);
+    return index < 0 ? fail(tr("Layout not found.")) : select(index);
+}
+
+bool Backend::applyProfile(const QString &name) {
+    const int index = profiles().indexOf(name);
+    if (index < 0) return fail(tr("Layout not found."));
+    const int previous = m_selected;
+    m_selected = index;
+    const auto restore = qScopeGuard([&] { m_selected = previous; });
+    return apply();
+}
+
+QJsonObject Backend::exportProfile(const QString &name) {
+    const int index = profiles().indexOf(name);
+    if (index < 0) { fail(tr("Layout not found.")); return {}; }
+    const int previous = m_selected;
+    m_selected = index;
+    const auto restore = qScopeGuard([&] { m_selected = previous; });
+    return rendererConfig();
 }
 
 bool Backend::select(int index) {
@@ -482,6 +609,9 @@ QJsonObject Backend::rendererConfig() const {
 bool Backend::apply() {
     if (m_profiles.isEmpty()) return fail(tr("No valid profile is available."));
     if (!QDir().mkpath(m_home + "/tbar")) return fail(tr("Could not create the configuration directory."));
+    QLockFile profilesLock(m_home + "/tbar/profiles.lock");
+    if (!profilesLock.tryLock(1000)) return fail(tr("Profiles are busy."));
+    if (!profilesUnchanged()) return false;
     QLockFile lock(m_home + "/tbar/renderer.lock");
     if (!lock.tryLock(1000)) return fail(tr("The renderer configuration is busy."));
     const QString path = m_home + "/omarchy-glance/touchbar.json";

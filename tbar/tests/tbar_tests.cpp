@@ -20,7 +20,23 @@ private slots:
     void previewUsesTemporaryConfig();
     void positionsAndGraphOptions();
     void themedLayoutFollowsChangesSafely();
+    void concurrentProfileEdits();
 };
+
+void BackendTests::concurrentProfileEdits() {
+    QTemporaryDir tmp;
+    Backend first(tmp.path()), second(tmp.path());
+    QVERIFY(first.addProfile("One"));
+    QVERIFY(!second.addProfile("Two"));
+    QVERIFY(second.message().contains("changed"));
+    Backend third(tmp.path()), fourth(tmp.path());
+    QVERIFY(third.addProfile("Three"));
+    QVERIFY(!fourth.addProfile("Four"));
+    QVERIFY(!fourth.apply());
+    QVERIFY(!QFile::exists(tmp.path() + "/omarchy-glance/touchbar.json"));
+    Backend reload(tmp.path());
+    QCOMPARE(reload.profiles(), QStringList({"Omarchy", "One", "Three"}));
+}
 
 void BackendTests::profilesAndRenderer() {
     QTemporaryDir tmp;
