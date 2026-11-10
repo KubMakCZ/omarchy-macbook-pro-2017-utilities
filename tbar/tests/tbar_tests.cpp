@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QFile>
 #include <QJsonDocument>
+#include <QScopeGuard>
 #include <QTemporaryDir>
 #include <QtTest>
 
@@ -15,6 +16,8 @@ private slots:
     void statusAndOriginalLayout();
     void changedLayoutIsNotRestored();
     void invalidSnapshotIsPreserved();
+    void widgetsAndExamples();
+    void previewUsesTemporaryConfig();
 };
 
 void BackendTests::profilesAndRenderer() {
@@ -153,6 +156,59 @@ void BackendTests::invalidSnapshotIsPreserved() {
         QVERIFY(file.readAll() != QByteArray("original"));
         file.close();
     }
+}
+
+void BackendTests::widgetsAndExamples() {
+    QTemporaryDir tmp;
+    Backend model(tmp.path());
+    QVERIFY(model.addProfile("Work"));
+    QVERIFY(model.addButton("Mine", "true"));
+    QVERIFY(model.addWidget("cpu"));
+    QVERIFY(!model.addWidget("invalid"));
+    QVERIFY(model.addExamples());
+    QCOMPARE(model.selected(), 1);
+    QCOMPARE(model.profiles(), QStringList({"Omarchy", "Work", "Monitor", "IT Demo"}));
+    QCOMPARE(model.buttons().first().toMap().value("label").toString(), QString("Mine"));
+    const auto layout = model.rendererConfig().value("layers").toObject()
+                            .value("default").toObject().value("left").toArray();
+    QCOMPARE(layout.last().toObject().value("id").toString(), QString("glance.cpu"));
+    QVERIFY(!model.addExamples());
+    Backend reload(tmp.path());
+    QCOMPARE(reload.profiles(), model.profiles());
+    QVERIFY(reload.select(3));
+    const auto demo = reload.rendererConfig().value("layers").toObject()
+                          .value("default").toObject().value("left").toArray();
+    QCOMPARE(demo.size(), 8);
+    QCOMPARE(demo[4].toObject().value("id").toString(), QString("glance.cpu"));
+    QCOMPARE(demo[5].toObject().value("id").toString(), QString("glance.memory"));
+}
+
+void BackendTests::previewUsesTemporaryConfig() {
+    QTemporaryDir tmp;
+    const QString renderer = tmp.path() + "/omarchy-glance";
+    QFile script(renderer);
+    QVERIFY(script.open(QIODevice::WriteOnly));
+    script.write("#!/bin/sh\n/bin/cp \"$XDG_CONFIG_HOME/omarchy-glance/touchbar.json\" \"$2.capture\"\n"
+                 "printf '%s' \"$3\" > \"$2.layer\"\nprintf 'image' > \"$2\"\n");
+    script.close();
+    QVERIFY(script.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner));
+    const QByteArray oldPath = qgetenv("PATH");
+    const auto restorePath = qScopeGuard([&] { qputenv("PATH", oldPath); });
+    qputenv("PATH", tmp.path().toUtf8());
+    Backend model(tmp.path() + "/user-config");
+    model.startPreview();
+    QTRY_VERIFY_WITH_TIMEOUT(!model.preview().isEmpty(), 5000);
+    const QString image = model.preview().toLocalFile();
+    QVERIFY(image.startsWith(QDir::tempPath()));
+    QVERIFY(!QFile::exists(tmp.path() + "/user-config/omarchy-glance/touchbar.json"));
+    const auto readFile = [](const QString &path) {
+        QFile file(path);
+        return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray();
+    };
+    QVERIFY(model.addWidget("cpu"));
+    QTRY_VERIFY_WITH_TIMEOUT(readFile(image + ".capture").contains("glance.cpu"), 5000);
+    model.setPreviewFn(true);
+    QTRY_COMPARE_WITH_TIMEOUT(readFile(image + ".layer"), QByteArray("fn"), 5000);
 }
 
 QTEST_GUILESS_MAIN(BackendTests)

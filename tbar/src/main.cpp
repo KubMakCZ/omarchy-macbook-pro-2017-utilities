@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         if (!window) return 1;
         const QString target = arguments[2];
-        QTimer::singleShot(700, &app, [window, target] {
+        QTimer::singleShot(2500, &app, [window, target] {
             QCoreApplication::exit(window->grabWindow().save(target) ? 0 : 1);
         });
     }

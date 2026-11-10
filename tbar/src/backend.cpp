@@ -10,10 +10,22 @@
 #include <QJsonObject>
 #include <QSaveFile>
 #include <QStandardPaths>
+#include <QProcessEnvironment>
 #include <QRegularExpression>
+#include <QUrlQuery>
 #include <QUuid>
 
 namespace {
+const QStringList widgets{"cpu", "memory", "network", "disk", "battery"};
+
+QJsonObject widget(const QString &kind, const QString &label) {
+    return {{"kind", "widget"}, {"label", label}, {"command", kind}};
+}
+
+QJsonObject button(const QString &label, const QString &command) {
+    return {{"label", label}, {"command", command}};
+}
+
 bool validSnapshot(const QJsonObject &snapshot) {
     if (snapshot.value("version").toInt() != 1 || !snapshot.value("existed").isBool()
         || !snapshot.value("data").isString())
@@ -52,6 +64,40 @@ bool writeJson(const QString &path, const QJsonObject &object, QString *error) {
 Backend::Backend(const QString &configHome, QObject *parent)
     : QObject(parent), m_home(configHome.isEmpty()
           ? QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) : configHome) {
+    m_previewTimer.setInterval(5000);
+    m_previewTimeout.setSingleShot(true);
+    m_previewTimeout.setInterval(15000);
+    connect(&m_previewTimer, &QTimer::timeout, this, &Backend::updatePreview);
+    connect(&m_previewTimeout, &QTimer::timeout, &m_previewProcess, &QProcess::kill);
+    connect(this, &Backend::changed, this, [this] {
+        ++m_previewRevision;
+        if (m_previewStarted) updatePreview();
+    });
+    connect(&m_previewProcess, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        if (error == QProcess::FailedToStart) {
+            m_previewTimeout.stop();
+            m_previewError = tr("Could not start the renderer preview.");
+            emit previewChanged();
+        }
+    });
+    connect(&m_previewProcess, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
+            this, [this](int exitCode, QProcess::ExitStatus status) {
+        m_previewTimeout.stop();
+        if (m_previewRequested != m_previewRevision) {
+            updatePreview();
+            return;
+        }
+        if (status != QProcess::NormalExit || exitCode != 0) {
+            m_previewError = tr("Could not render the preview.");
+        } else {
+            m_preview = QUrl::fromLocalFile(m_previewDir.path() + "/preview.png");
+            QUrlQuery query;
+            query.addQueryItem("frame", QString::number(QDateTime::currentMSecsSinceEpoch()));
+            m_preview.setQuery(query);
+            m_previewError.clear();
+        }
+        emit previewChanged();
+    });
     QFile file(m_home + "/tbar/profiles.json");
     if (!file.exists()) {
         m_profiles = QJsonArray{QJsonObject{{"name", "Omarchy"}, {"buttons", QJsonArray{
@@ -88,8 +134,9 @@ Backend::Backend(const QString &configHome, QObject *parent)
             const QString kind = obj.value("kind").toString("button");
             const QString argument = obj.value("command").toString();
             if (!button.isObject() || obj.value("label").toString().trimmed().isEmpty()
-                || !QStringList{"button", "internet", "temperature", "process"}.contains(kind)
+                || !QStringList{"button", "internet", "temperature", "process", "widget"}.contains(kind)
                 || (kind == "button" && argument.trimmed().isEmpty())
+                || (kind == "widget" && !widgets.contains(argument))
                 || (kind == "process" && !QRegularExpression("^[A-Za-z0-9._+-]{1,15}$").match(argument).hasMatch())) {
                 m_message = tr("Profiles are invalid. The file was not changed.");
                 return;
@@ -114,6 +161,45 @@ QVariantList Backend::buttons() const {
 
 bool Backend::rendererAvailable() const {
     return !QStandardPaths::findExecutable("omarchy-glance").isEmpty();
+}
+
+void Backend::setPreviewFn(bool enabled) {
+    if (m_previewFn == enabled) return;
+    m_previewFn = enabled;
+    ++m_previewRevision;
+    emit previewChanged();
+    if (m_previewStarted) updatePreview();
+}
+
+void Backend::startPreview() {
+    if (m_previewStarted) return;
+    m_previewStarted = true;
+    m_previewTimer.start();
+    updatePreview();
+}
+
+void Backend::updatePreview() {
+    if (m_previewProcess.state() != QProcess::NotRunning || m_profiles.isEmpty()) return;
+    const QString renderer = QStandardPaths::findExecutable("omarchy-glance");
+    if (renderer.isEmpty() || !m_previewDir.isValid()) {
+        m_previewError = tr("Renderer preview is unavailable.");
+        emit previewChanged();
+        return;
+    }
+    QString error;
+    if (!writeJson(m_previewDir.path() + "/omarchy-glance/touchbar.json", rendererConfig(), &error)) {
+        m_previewError = tr("Could not save preview configuration: %1").arg(error);
+        emit previewChanged();
+        return;
+    }
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("XDG_CONFIG_HOME", m_previewDir.path());
+    m_previewProcess.setProcessEnvironment(env);
+    m_previewRequested = m_previewRevision;
+    QStringList args{"preview", m_previewDir.path() + "/preview.png"};
+    if (m_previewFn) args.append("fn");
+    m_previewProcess.start(renderer, args);
+    m_previewTimeout.start();
 }
 
 void Backend::setMessage(const QString &message) {
@@ -217,6 +303,48 @@ bool Backend::moveButton(int from, int to) {
     return save(updated, m_selected);
 }
 
+bool Backend::addWidget(const QString &kind) {
+    if (m_selected < 0 || m_selected >= m_profiles.size() || !widgets.contains(kind))
+        return false;
+    QJsonArray updated = m_profiles;
+    QJsonObject profile = updated[m_selected].toObject();
+    QJsonArray items = profile.value("buttons").toArray();
+    if (items.size() >= 12) return fail(tr("A profile can have at most 12 items."));
+    items.append(widget(kind, kind == "memory" ? "RAM" : kind.toUpper()));
+    profile.insert("buttons", items);
+    updated[m_selected] = profile;
+    return save(updated, m_selected);
+}
+
+bool Backend::addExamples() {
+    if (m_profiles.isEmpty()) return fail(tr("No valid profile is available."));
+    const QJsonArray examples{
+        QJsonObject{{"name", "Work"}, {"buttons", QJsonArray{
+            button("Keys", "omarchy menu keybindings"), button("Menu", "omarchy menu toggle"),
+            button("Theme", "omarchy menu toggle appearance.theme"), button("Agent", "omarchy agent"),
+            widget("battery", "BAT")}}},
+        QJsonObject{{"name", "Monitor"}, {"buttons", QJsonArray{
+            widget("cpu", "CPU"), widget("memory", "RAM"), widget("network", "NET"),
+            widget("disk", "DISK"), widget("battery", "BAT")}}},
+        QJsonObject{{"name", "IT Demo"}, {"buttons", QJsonArray{
+            button("Keys", "omarchy menu keybindings"), button("Agent", "omarchy agent"),
+            button("Theme", "omarchy menu toggle appearance.theme"), widget("cpu", "CPU"),
+            widget("memory", "RAM"), widget("network", "NET"), widget("battery", "BAT")}}}
+    };
+    QJsonArray updated = m_profiles;
+    QStringList names = profiles();
+    for (const auto &example : examples) {
+        const QString name = example.toObject().value("name").toString();
+        if (!names.contains(name)) {
+            updated.append(example);
+            names.append(name);
+        }
+    }
+    if (updated.size() == m_profiles.size())
+        return fail(tr("Example layouts already exist."));
+    return save(updated, m_selected);
+}
+
 QJsonObject Backend::rendererConfig() const {
     QJsonArray left{QJsonObject{{"id", "glance.esc"}}};
     int index = 0;
@@ -227,7 +355,9 @@ QJsonObject Backend::rendererConfig() const {
         const QString kind = button.value("kind", "button").toString();
         const QString id = QString("tbar.%1").arg(index++);
         const QString encoded = QString::fromLatin1(button.value("command").toString().toUtf8().toBase64());
-        if (kind == "button") {
+        if (kind == "widget") {
+            left.append(QJsonObject{{"id", "glance." + button.value("command").toString()}});
+        } else if (kind == "button") {
             const QString command = QString("'%1' action %2").arg(binary, encoded);
             left.append(QJsonObject{{"id", id}, {"type", "button"},
                                     {"label", button.value("label").toString()},

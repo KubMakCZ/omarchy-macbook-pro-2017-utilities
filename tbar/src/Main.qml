@@ -16,6 +16,7 @@ ApplicationWindow {
     Material.accent: desktop.accent
     LayoutMirroring.enabled: Qt.application.layoutDirection === Qt.RightToLeft
     LayoutMirroring.childrenInherit: true
+    Component.onCompleted: backend.startPreview()
 
     Shortcut {
         sequence: "?"
@@ -55,6 +56,7 @@ ApplicationWindow {
                 onActivated: function(index) { backend.select(index) }
             }
             Button { text: qsTr("New"); onClicked: createProfile.open() }
+            Button { text: qsTr("Add examples"); onClicked: backend.addExamples() }
             Button {
                 text: qsTr("Delete")
                 enabled: backend.profiles.length > 1
@@ -65,6 +67,32 @@ ApplicationWindow {
             text: qsTr("Escape is always present. Hold Fn for F1–F12.")
             wrapMode: Text.Wrap
             Layout.fillWidth: true
+        }
+        RowLayout {
+            Label { text: qsTr("Live preview") }
+            CheckBox {
+                text: qsTr("Fn layer")
+                checked: backend.previewFn
+                onToggled: backend.previewFn = checked
+            }
+            Label {
+                text: backend.previewError
+                color: "#e05a5a"
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+            }
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            color: "#000000"
+            Image {
+                anchors.fill: parent
+                source: backend.preview
+                cache: false
+                fillMode: Image.PreserveAspectFit
+                asynchronous: true
+            }
         }
         ListView {
             id: list
@@ -134,6 +162,19 @@ ApplicationWindow {
                     statusLabel.clear()
                     statusArgument.clear()
                 }
+            }
+        }
+        RowLayout {
+            ComboBox {
+                id: widgetKind
+                model: [qsTr("CPU graph"), qsTr("Memory graph"), qsTr("Network graph"),
+                        qsTr("Disk graph"), qsTr("Battery")]
+                Layout.fillWidth: true
+            }
+            Button {
+                text: qsTr("Add live widget")
+                enabled: backend.buttons.length < 12
+                onClicked: backend.addWidget(["cpu", "memory", "network", "disk", "battery"][widgetKind.currentIndex])
             }
         }
         Label {

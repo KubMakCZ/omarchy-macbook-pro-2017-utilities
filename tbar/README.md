@@ -1,7 +1,8 @@
 # tbar: experimentální editor scén
 
-Qt aplikace pro přípravu vlastních rozložení Touch Baru na Omarchy. Je to
-první verze: **na fyzickém Touch Baru nebyla ověřena**. Samotná aplikace
+Qt aplikace pro přípravu vlastních rozložení Touch Baru na Omarchy. Základní
+scéna a tlačítka byly ověřeny na MacBookPro14,2; další widgety jsou experimentální.
+Samotná aplikace
 neinstaluje ovladač, T1Bridge ani [omarchy-glance](https://github.com/andersryanc/omarchy-macbook-touchbar-custom).
 Současný firmwareový režim nepodporuje její vlastní tlačítka.
 
@@ -17,7 +18,7 @@ bash bin/build
 Je potřeba qmake6, make, C++ kompilátor a Qt 6 včetně Qt Quick Controls.
 Pro případnou lokální instalaci do nabídky aplikací je připravený Arch balíček:
 `bash bin/install` zavolá `makepkg -si` a může požádat o instalaci závislostí
-a heslo. Tuto instalaci jsme zatím na systému neprovedli. Projektová licence
+a heslo. Projektová licence
 dosud nebyla zvolena; balíček označuje vlastní kód jako nelicencovaný a není
 tím uděleno oprávnění k dalšímu šíření.
 
@@ -42,6 +43,18 @@ mohou zobrazovat i při zamčené obrazovce. Spouštění příkazů se pokouš�
 zamčení ověřit dvěma dotazy a při chybě příkaz odmítá, ale mezi kontrolou
 a spuštěním existuje časové okno: **nejde o bezpečnostní záruku**.
 
+„Přidat ukázky“ vytvoří chybějící scény `Work`, `Monitor` a `IT Demo`, aniž
+by přepsalo existující scény se stejným názvem nebo změnilo aktuální výběr.
+`Work` nabízí zkratky a baterii, `Monitor` živé grafy CPU, RAM, sítě a disku
+a stav baterie. `IT Demo` kombinuje zkratky s grafy CPU, RAM, sítě a baterií.
+Živé widgety lze přidávat také jednotlivě. Grafy reagují na skutečnou zátěž;
+dostupnost údajů závisí na hardwaru a rendereru.
+
+Pro ukázku v IT komunitě vyber `IT Demo`, potvrď „Použít rozložení“ a ukaž,
+jak se při práci mění grafy. Tlačítko `Keys` otevře přehled zkratek; výběr
+jiné scény v editoru a její použití ukáže přizpůsobení. Než začneš nahrávat
+nebo sdílet obrazovku, zkontroluj, zda neobsahuje osobní údaje.
+
 | Zkratka | Akce |
 | --- | --- |
 | `?` | Nápověda |
@@ -49,6 +62,10 @@ a spuštěním existuje časové okno: **nejde o bezpečnostní záruku**.
 | `Esc` | Zavření dialogu |
 
 Scény jsou v `~/.config/tbar/profiles.json` (respektuje se `XDG_CONFIG_HOME`).
+Živý náhled zobrazuje vybranou scénu i volitelnou vrstvu Fn bez jejího použití.
+Obnovuje se přibližně po pěti sekundách pomocí `omarchy-glance preview`: údaje
+jsou skutečné, ale historie grafů je krátká, protože se každý snímek vzorkuje
+znovu. Stavové příkazy se při náhledu spouštějí; tlačítka náhledu nejsou aktivní.
 Při prvním použití editor zaznamená původní konfiguraci rendereru v
 `~/.config/tbar/original-renderer.json` a před každým přepsáním existujícího
 `~/.config/omarchy-glance/touchbar.json` vytvoří další zálohu vedle něj.
@@ -65,9 +82,9 @@ Pro kontrolu bez grafického prostředí:
 bash bin/test
 ```
 
-`export` vypíše JSON, ale nezapíše konfiguraci. Export byl předběžně ověřen
-náhledem `omarchy-glance` revize `9c75e5e1d71cf583fe9b02c124cffa272fd7fcb1`,
-nikoli na hardwaru. Renderer je samostatný projekt pod svou licencí.
+`export` vypíše JSON, ale nezapíše konfiguraci. Export základní scény byl ověřen
+s `omarchy-glance` revize `9c75e5e1d71cf583fe9b02c124cffa272fd7fcb1` na
+MacBookPro14,2. Renderer je samostatný projekt pod svou licencí.
 
 ## Omezení a další vývoj
 

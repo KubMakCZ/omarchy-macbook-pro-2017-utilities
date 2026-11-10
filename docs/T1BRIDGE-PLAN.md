@@ -110,3 +110,7 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
 - 2026-11-10: uživatel potvrzuje zobrazení Esc a živých grafů CPU a paměti
   na fyzickém Touch Baru. Dotyk a export vlastních scén editoru ještě čekají
   na ověření.
+- 2026-11-10: uživatel potvrdil vykreslení a funkci tlačítek základní scény
+  exportované editorem. Připraveny upravitelné ukázky `Work`, `Monitor` a
+  `IT Demo`, živé widgety a izolovaný průběžný náhled; nové scény a náhled
+  ještě vyžadují uživatelské ověření.
