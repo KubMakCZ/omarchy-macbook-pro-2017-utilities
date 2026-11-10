@@ -3,7 +3,7 @@ set -euo pipefail
 dir="$(cd -- "$(dirname -- "$0")" && pwd)"
 
 usage() {
-  echo "Použití: bash setup.sh [--check|--keyboard|--usb-power|--build-app|--install-app|--renderer-build|--touchbar-service]"
+  echo "Použití: bash setup.sh [--check|--keyboard|--usb-power|--build-app|--install-app|--renderer-build|--renderer-enable|--touchbar-service]"
 }
 
 if (( $# > 1 )); then usage >&2; exit 2; fi
@@ -26,6 +26,7 @@ case "${1:---check}" in
   --build-app) bash "$dir/tbar/bin/build" ;;
   --install-app) bash "$dir/tbar/bin/install" ;;
   --renderer-build) bash "$dir/install-glance.sh" ;;
+  --renderer-enable) bash "$dir/enable-glance.sh" ;;
   --usb-power)
     echo "Instalace opravy USB řadičů; vyžaduje oprávnění správce."
     exec sudo bash "$dir/install-usb-power-service.sh"

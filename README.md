@@ -5,7 +5,8 @@ modely mohou vyžadovat jiné ovladače. Tento projekt zatím není kompletní
 instalátor hardwaru.
 
 Praktické tipy jsou v [TIPY.md](TIPY.md), postup pro čistou instalaci
-v [docs/INSTALL.md](docs/INSTALL.md) a editor scén v [tbar/README.md](tbar/README.md).
+v [docs/INSTALL.md](docs/INSTALL.md), editor scén v [tbar/README.md](tbar/README.md)
+a další práce a předání jinému agentovi v [ROADMAP.md](ROADMAP.md).
 
 ## Rychlý postup
 
@@ -17,6 +18,7 @@ bash setup.sh --keyboard    # české QWERTZ pro aktuálního uživatele
 bash setup.sh --build-app   # sestavení editoru, bez instalace
 bash setup.sh --install-app # sestavení a instalace editoru
 bash setup.sh --renderer-build # sestavení a instalace rendereru, bez aktivace
+bash setup.sh --renderer-enable # výslovná aktivace rendereru po instalaci T1Bridge
 bash setup.sh --usb-power   # volitelná oprava USB; sudo
 ```
 

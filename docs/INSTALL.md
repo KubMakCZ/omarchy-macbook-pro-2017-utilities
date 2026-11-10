@@ -144,15 +144,30 @@ o heslo a instalovat chybějící balíčkové závislosti. Hook pro téma se in
 jen pokud stejnojmenný soubor neexistuje. Zavři běžící starý editor před
 aktualizací balíčku.
 
-Pro aktivaci vlastního rendereru nejdřív zkontroluj a případně zazálohuj:
+Pro aktivaci vlastního rendereru zkontroluj a případně zazálohuj:
 
 - `${XDG_CONFIG_HOME:-~/.config}/t1bridge/renderer`
 - `${XDG_CONFIG_HOME:-~/.config}/systemd/user/omarchy-glance.service`
 - `${XDG_CONFIG_HOME:-~/.config}/systemd/user/omarchy-glance.socket`
 
-Upstream příkaz `~/.local/bin/omarchy-glance on` tyto soubory může **přepsat**, zapíná
-uživatelský socket a restartuje službu Touch Baru. Použij jej až po kontrole
-jejich obsahu a po záloze; nepřepisuj neznámou konfiguraci bez rozhodnutí.
+Po funkčním T1Bridge a aktivní, povolené uživatelské službě `t1-touchbar` můžeš
+renderer výslovně aktivovat:
+
+```bash
+bash setup.sh --renderer-enable
+```
+
+Příkaz vytvoří konfiguraci odpovídající připnutému rendereru jen tam, kde
+neexistuje; odlišné soubory a symbolické odkazy odmítne. Zapne uživatelský
+socket a restartuje službu Touch Baru. Opakování při stejné aktivní konfiguraci
+službu znovu nerestartuje. Při chybě během vytváření mohou již vytvořené
+shodné soubory zůstat na místě; vyřeš konflikt a spusť příkaz znovu.
+Aktivaci prováděj z grafické relace se stejným `XDG_CONFIG_HOME`, jaký používá
+uživatelský správce systemd.
+Aktivace nebyla zatím ověřena na čisté instalaci.
+
+Samotný upstream příkaz `~/.local/bin/omarchy-glance on` na rozdíl od našeho
+kroku tyto soubory může **přepsat**; použij jej jen po kontrole a záloze.
 Pak otevři `tbar`, vytvoř scénu a použij ji. Editor před přepsáním rendererové
 konfigurace vytváří zálohy. `~/.local/bin/omarchy-glance off` přepne na vestavěný renderer
 T1Bridge a odstraní výběrový soubor rendereru; není to odinstalace T1Bridge.

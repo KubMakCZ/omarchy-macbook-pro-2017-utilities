@@ -43,7 +43,7 @@ fi
 temp="$(mktemp "$bin_dir/.omarchy-glance.XXXXXXXX")"
 trap 'rm -f -- "$temp"' EXIT
 install -m 755 -- "$binary" "$temp"
-if ! ln -- "$temp" "$target"; then
+if ! ln -T -- "$temp" "$target"; then
   echo "Renderer nebyl nainstalován; cílový soubor se mohl mezitím objevit." >&2
   exit 1
 fi

@@ -19,7 +19,7 @@ bash bin/build
 
 Je potřeba qmake6, make, C++ kompilátor a Qt 6 včetně Qt Quick Controls.
 Pro případnou lokální instalaci do nabídky aplikací je připravený Arch balíček:
-`bash bin/install` zavolá `makepkg -si` a může požádat o instalaci závislostí
+`bash bin/install` zavolá `makepkg -fsi` a může požádat o instalaci závislostí
 a heslo. Nainstaluje také hook `tbar-theme-sync` pro změnu tématu, pokud ještě
 neexistuje. Při instalaci samotného balíčku jej lze přidat příkazem
 `omarchy hook install theme-set /usr/share/tbar/tbar-theme-sync`; před spuštěním
