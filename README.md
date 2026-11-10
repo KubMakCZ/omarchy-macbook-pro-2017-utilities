@@ -7,6 +7,7 @@ instalátor hardwaru.
 Praktické tipy jsou v [TIPY.md](TIPY.md), postup pro čistou instalaci
 v [docs/INSTALL.md](docs/INSTALL.md), editor scén v [tbar/README.md](tbar/README.md)
 a další práce a předání jinému agentovi v [ROADMAP.md](ROADMAP.md).
+Pokyny pro AI agenty jsou v [AGENTS.md](AGENTS.md).
 
 ## Rychlý postup
 
