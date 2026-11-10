@@ -107,3 +107,6 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   spojení s Touch Barem a načtení výchozího rozložení. Fyzické zobrazení a dotyk
   zatím čekají na potvrzení uživatele. Návrat na vestavěný renderer provede
   `~/.local/bin/omarchy-glance off`; backend zůstává nainstalován.
+- 2026-11-10: uživatel potvrzuje zobrazení Esc a živých grafů CPU a paměti
+  na fyzickém Touch Baru. Dotyk a export vlastních scén editoru ještě čekají
+  na ověření.
