@@ -101,3 +101,9 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   Copilota. Hardwarová i uživatelská služba jsou aktivní, tiny-dfr vypnutý.
   V logu se znovu objevilo varování o nedostupném desktop provideru při startu;
   následný kontrolní dotaz na provider uspěl. Příčina varování není ověřena.
+- 2026-11-10: `omarchy-glance` revize `9c75e5e1d71cf583fe9b02c124cffa272fd7fcb1`
+  sestaven lokálně a uložen do `~/.local/bin/omarchy-glance`; balíček `tbar`
+  0.1.0-1 nainstalován. `omarchy-glance on` zapnul backend a renderer; log hlásí
+  spojení s Touch Barem a načtení výchozího rozložení. Fyzické zobrazení a dotyk
+  zatím čekají na potvrzení uživatele. Návrat na vestavěný renderer provede
+  `~/.local/bin/omarchy-glance off`; backend zůstává nainstalován.
