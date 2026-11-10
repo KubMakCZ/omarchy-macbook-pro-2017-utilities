@@ -1,5 +1,7 @@
 # tbar: experimentální editor scén
 
+![Editor Touch Baru s ukázkovou scénou a živým náhledem](screenshots/editor.png)
+
 Qt aplikace pro přípravu vlastních rozložení Touch Baru na Omarchy. Základní
 scéna a tlačítka byly ověřeny na MacBookPro14,2; další widgety jsou experimentální.
 Samotná aplikace
@@ -60,6 +62,8 @@ vloží prázdné místo s nastavitelnou šířkou. Escape zůstává vlevo. Ren
 umisťuje každou část nezávisle: pokud jsou příliš široké, mohou se překrýt;
 zkontroluj výsledek v náhledu. Skutečné CSS `space-between`, `space-around`
 a `space-evenly` renderer nepodporuje.
+
+![Nastavení umístění a vzhledu grafu](screenshots/graph-settings.png)
 
 Volba „Barvy tlačítek podle tématu Omarchy“ platí pro celou vybranou scénu
 včetně Esc a dalších tlačítek. Po použití scény hook při změně tématu bezpečně
