@@ -6,7 +6,7 @@ Qt aplikace pro přípravu vlastních rozložení Touch Baru na Omarchy. Základ
 scéna a tlačítka byly ověřeny na MacBookPro14,2; další widgety jsou experimentální.
 Samotná aplikace
 neinstaluje ovladač, T1Bridge ani [omarchy-glance](https://github.com/andersryanc/omarchy-macbook-touchbar-custom).
-Současný firmwareový režim nepodporuje její vlastní tlačítka.
+Starší firmwareový režim bez vlastního rendereru její vlastní tlačítka nepodporuje.
 
 ## Příprava a spuštění
 
@@ -169,10 +169,10 @@ MacBookPro14,2. Renderer je samostatný projekt pod svou licencí.
 
 Na MacBookPro14,2 T1Bridge uvádí omezení uspávání/probuzení. Přechod vyžaduje
 kontrolu kompatibility, zálohu Apple EFI, plán návratu, možnou aktualizaci
-jádra a restart. **Nepřepínej konkurenční ovladače za běhu.** Na tomto stroji
-jsou současné ovladače Touch Baru a zvuku mimo správu balíčků; aktualizace je
-může rozbít. Postup instalace experimentálního stacku není v tomto projektu
-zatím ověřen ani automatizován.
+jádra a restart. **Nepřepínej konkurenční ovladače za běhu.** Na testovaném
+stroji Touch Bar používá T1Bridge DKMS; při původní kontrole byl zvukový modul
+mimo správu balíčků. Aktualizace může funkce rozbít. Návod na
+[instalaci stacku](../docs/INSTALL.md) není zatím ověřen na čistém systému.
 
 Výběr scén přímo na Touch Baru, automatické přepínání podle aktivní aplikace,
 GIFy, libovolný počet prvků a grafické ikony zatím nejsou implementovány.

@@ -6,6 +6,13 @@ set -euo pipefail
   echo "Tento postup je určen pouze pro MacBookPro14,2." >&2
   exit 1
 }
+if { command -v pacman >/dev/null && pacman -Qq t1bridge >/dev/null 2>&1; } \
+  || [[ -d /sys/module/t1_cfgsel ]] \
+  || systemctl is-active --quiet t1-touchbar-hw.service \
+  || systemctl is-enabled --quiet t1-touchbar-hw.service; then
+  echo "T1Bridge je nainstalovaný nebo aktivní; stará služba by mohla soupeřit s jeho ovladačem. Nic nebylo změněno." >&2
+  exit 1
+fi
 dir="$(cd -- "$(dirname -- "$0")" && pwd)"
 script=/usr/local/libexec/omarchy-mbp-touchbar-rebind
 service=/etc/systemd/system/omarchy-mbp-touchbar.service

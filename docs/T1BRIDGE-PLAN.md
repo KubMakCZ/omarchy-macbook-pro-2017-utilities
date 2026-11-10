@@ -42,7 +42,7 @@ před použitím ověř aktuální dokumentaci upstreamu.
 7. Stávající `omarchy-mbp-touchbar.service` je třeba vyřadit, aby nesoupeřila
    s novým ovladačem.
 
-## Návrat zpět
+## Návrat zpět (historický, neověřený)
 
 Provedeno na tomto stroji (stav před restartem): balíčky `t1bridge` a
 `t1bridge-dkms` 0.1.12, služby `t1-touchbar-hw.service`, `t1-touchid-auth.socket`,
@@ -50,14 +50,12 @@ Provedeno na tomto stroji (stav před restartem): balíčky `t1bridge` a
 `/etc/modules-load.d/touchbar.conf` přejmenován na `.disabled-t1bridge`.
 Seznam balíčků před změnou: `~/pacman-Q-before-t1bridge.txt`.
 
-Návrat na firmwarový Touch Bar (nevyzkoušeno, připraveno):
-
-```bash
-sudo systemctl disable t1-touchbar-hw.service t1-touchid-auth.socket t1bridge-fingerprint.socket
-sudo mv /etc/modules-load.d/touchbar.conf.disabled-t1bridge /etc/modules-load.d/touchbar.conf
-sudo systemctl enable omarchy-mbp-touchbar.service
-sudo pacman -Rns t1bridge t1bridge-dkms
-```
+Původně zde navržené příkazy pro odebrání balíčků a znovuzapnutí staré služby
+nebyly vyzkoušeny a nezohledňovaly později instalovaný `t1bridge-omarchy`.
+**Nespouštěj je naslepo.** Pro návrat jen z vlastního rendereru na vestavěný
+T1Bridge viz [instalace](INSTALL.md). Úplné odstranění T1Bridge a návrat ke
+starému ovladači vyžadují zvláštní postup podle aktuálního upstreamu, kontrolu
+balíčků a zálohu; nesmějí odstranit Apple EFI ani chráněná data T1.
 
 Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
 `omarchy update`), případně obnovovací USB. Záloha Apple EFI je mimo repozitář.

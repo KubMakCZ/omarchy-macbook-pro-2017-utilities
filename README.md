@@ -4,8 +4,8 @@ Poznámky k modelu **MacBookPro14,2 (A1706, Touch Bar, čip T1)**. Ostatní
 modely mohou vyžadovat jiné ovladače. Tento projekt zatím není kompletní
 instalátor hardwaru.
 
-Praktické tipy ke klávesnici, Touch Baru a Omarchy jsou v [TIPY.md](TIPY.md).
-Experimentální editor scén je v [tbar/README.md](tbar/README.md).
+Praktické tipy jsou v [TIPY.md](TIPY.md), postup pro čistou instalaci
+v [docs/INSTALL.md](docs/INSTALL.md) a editor scén v [tbar/README.md](tbar/README.md).
 
 ## Rychlý postup
 
@@ -15,16 +15,18 @@ V adresáři projektu lze jednotlivé kroky opakovat:
 bash setup.sh --check       # pouze diagnostika, bez změn
 bash setup.sh --keyboard    # české QWERTZ pro aktuálního uživatele
 bash setup.sh --build-app   # sestavení editoru, bez instalace
+bash setup.sh --install-app # sestavení a instalace editoru
+bash setup.sh --renderer-build # sestavení a instalace rendereru, bez aktivace
+bash setup.sh --usb-power   # volitelná oprava USB; sudo
 ```
 
-Volitelně `bash setup.sh --touchbar-service` nainstaluje níže popsanou službu
-pro **již existující** firmwareový ovladač; vyžaduje `sudo`. K sestavení
-editoru je potřeba Qt 6, qmake6, make a C++ kompilátor. Skript neinstaluje
-balíčky, neaktualizuje systém ani nepřepíná ovladače. Nejde zatím o kompletní
-instalaci pro čistý systém: ovladač Touch Baru a jeho aktualizace pro nové
-jádro musí být vyřešeny zvlášť.
+Jednotlivé kroky nic samy neformátují ani nepřepínají T1 ovladače. Instalace
+editoru může instalovat balíčkové závislosti a vyžádat si heslo. Renderer se
+sestavuje z připnuté revize externího projektu a nenahrazuje odlišný existující
+soubor. T1Bridge je zatím nutné nainstalovat podle [postupu](docs/INSTALL.md);
+nejde o plně automatický instalátor a čistou instalaci jsme zatím neověřili.
 
-Vývoj aplikace a návodů je zatím lokální. Licenci vlastního kódu jsme ještě
+Licenci vlastního kódu jsme ještě
 nezvolili; před přijetím či šířením příspěvků ji bude nutné určit. Cizí
 projekty mají vlastní licence a nejsou součástí tohoto repozitáře.
 
@@ -61,21 +63,26 @@ Výstup ukazuje model, jádro, stav vybraných ovladačů, DKMS a síťových
 rozhraní. Neobsahuje záměrně názvy Wi-Fi sítí ani MAC adresy, ale před
 zveřejněním jej vždy zkontroluj.
 
-## Zhasnutý Touch Bar
+## Touch Bar: dva neslučitelné postupy
 
-Na tomto stroji byl ovladač již načtený, ale jedno rozhraní iBridge převzal
-`hid-sensor-hub`. Po připojení obou rozhraní k `apple-ibridge-hid` Touch Bar
-svítil a tlačítka podle uživatele fungovala. Tento projekt obsahuje službu,
-která stejné připojení provádí po startu:
+Na testovaném počítači nyní běží **T1Bridge a omarchy-glance**. Při problémech
+nejprve zkontroluj `systemctl --user status t1-touchbar.service --no-pager`
+a `sudo t1bridge status`; viz [instalace a řešení problémů](docs/INSTALL.md).
+Starou službu uvedenou níže na tomto systému nezapínej.
+
+Historicky na tomto stroji před přechodem na T1Bridge jedno rozhraní iBridge
+převzal `hid-sensor-hub`. Projekt obsahuje starší službu pro jeho opětovné
+připojení k již nainstalovanému firmwareovému ovladači:
 
 ```bash
 sudo bash install-touchbar-service.sh
 systemctl status omarchy-mbp-touchbar.service
 ```
 
-Služba **neinstaluje ovladač** a vyžaduje již načtený `apple-ibridge-hid`.
-Není náhradou za správnou instalaci ovladače pomocí DKMS. Po aktualizaci jádra
-proto nemusí Touch Bar fungovat. Chování po restartu a uspání je třeba ověřit.
+**Nepoužívat společně s T1Bridge nebo konkurenčním rendererem.** Instalátor
+staré služby odmítne známý aktivní či nainstalovaný T1Bridge. Služba
+neinstaluje ovladač a vyžaduje `apple-ibridge-hid`; po aktualizaci jádra
+nemusí fungovat. Restart byl v tehdejším režimu ověřen, uspání nikoli.
 
 ## Poznatky z aktuální instalace
 
@@ -84,19 +91,18 @@ proto nemusí Touch Bar fungovat. Chování po restartu a uspání je třeba ov�
   není důvod preventivně nahrazovat `broadcom-wl`.
 - Vestavěný `applespi` obsluhuje klávesnici a touchpad. Systém detekuje iBridge
   `05ac:8600` a kamerové zařízení, jejich reálná funkce se musí vyzkoušet.
-- Aktuálně přítomné ovladače Touch Baru a zvuku byly nainstalovány mimo správu
-  balíčků. Dvě staré položky DKMS nejsou pro aktuální jádro nainstalované;
-  zdroj `macbook12-spi-driver-dkms` se pro toto jádro nepodařilo sestavit.
-  Aktualizace jádra tak může tyto funkce rozbít. Automatická instalace nového
-  ovladače v tomto projektu zatím není.
+- Touch Bar nyní používá balíčky `t1bridge` a `t1bridge-dkms`; zvukový modul
+  byl při původní kontrole mimo správu balíčků. Staré položky DKMS pro klávesnici
+  nebyly sestavené pro tehdejší jádro. Po aktualizaci ověř sestavení DKMS,
+  initramfs/UKI a funkci zařízení; kompatibilita budoucích jader není zaručena.
 - Alternativní [apple-touchbar-driver](https://github.com/Phennova/apple-touchbar-driver)
   se pro aktuální jádro sestavil, ale **nebyl nainstalován ani vyzkoušen na
   tomto stroji**. Jeho instalační skript mění DKMS a systémové služby; nejprve
   ověř kompatibilitu s existujícím nastavením.
 - Podle uživatele fungují reproduktory i mikrofon. Kameru a probuzení z uspání
   je ještě třeba vyzkoušet.
-- Touch ID nefunguje v aktuálním režimu. Alternativní T1Bridge uvádí
-  experimentální podporu na tomto modelu, s dalšími omezeními.
+- Touch ID na našem stroji nebylo nastaveno ani ověřeno. T1Bridge nabízí
+  experimentální podporu s dalšími podmínkami.
 
 Podrobnosti o Wi-Fi, zvuku, Touch Baru a uspávání se mohou měnit podle verze
 jádra; před zásahem ověř aktuální [ArchWiki](https://wiki.archlinux.org/title/MacBookPro14,2).
@@ -118,8 +124,8 @@ systemctl status omarchy-mbp-usb-power.service --no-pager
 ```
 
 Služba nastaví `power/control=on` u obou externích řadičů při startu.
-Může mírně zvýšit spotřebu; její účinek po restartu a uspání ještě není
-ověřený. Pokud nové USB zařízení nevidí ani `lsblk`, přeinstalace `udiskie`
+Může mírně zvýšit spotřebu; po restartu byla ověřena, po uspání nikoli.
+Pokud nové USB zařízení nevidí ani `lsblk`, přeinstalace `udiskie`
 to sama nevyřeší.
 
 Návrat k automatickému uspávání (změna zmizí i restartem po vypnutí služby):

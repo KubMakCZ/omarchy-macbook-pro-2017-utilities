@@ -2,7 +2,7 @@
 set -eu
 root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 cd "$root"
-makepkg -si
+makepkg -fsi
 hook="$HOME/.config/omarchy/hooks/theme-set.d/tbar-theme-sync"
 if command -v omarchy >/dev/null 2>&1 && [ ! -e "$hook" ] && [ ! -L "$hook" ]; then
   omarchy hook install theme-set /usr/share/tbar/tbar-theme-sync

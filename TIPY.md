@@ -42,19 +42,18 @@ Chování závisí na ovladači a aplikaci; vyzkoušej je v textovém editoru.
 
 ## Touch Bar
 
-V současném režimu jej vykresluje firmware. Vlevo je `Esc`; ostatní tlačítka
-obvykle ovládají jas, přehrávání a hlasitost. Podrž `Fn` pro řadu **F1–F12**.
-Některá místa nebo akce mohou zůstat prázdná. Když panel zhasne nečinností,
-zkus stisknout klávesu nebo použít touchpad; pokud nesvítí ani potom:
+Na ověřeném počítači panel obsluhuje T1Bridge a vlastní renderer
+`omarchy-glance`. Podoba a akce závisí na aktivní scéně. Vlevo zůstává `Esc`;
+v exportu editoru podržení `Fn` zobrazí **F1–F12**. Když panel nesvítí:
 
 ```bash
-systemctl status omarchy-mbp-touchbar.service --no-pager
+systemctl --user status t1-touchbar.service --no-pager
+sudo t1bridge status
 bash diagnose.sh
 ```
 
-Projektová služba pomáhá pouze s již nainstalovaným ovladačem. Neinstaluje ho
-a zatím není ověřená po restartu. Současný firmware neumí nakreslit libovolné
-vlastní ikony: k tomu je nutný odlišný, experimentální režim. U
+Stará služba `omarchy-mbp-touchbar.service` je pouze pro dřívější firmwareový
+ovladač a **nesmí soupeřit s T1Bridge**. U
 [T1Bridge](https://github.com/standardagents/t1bridge) je na tomto modelu
 hlášené nefunkční uspání/probuzení; nepřepínej ovladače bez zálohy a plánu
 návratu. Neprováděj ruční reset T1 ani neinstaluj dva konkurenční ovladače
@@ -62,12 +61,12 @@ naslepo.
 
 ### Vlastní scény
 
-Projekt obsahuje připravovaný editor [tbar](tbar/README.md): v něm lze
+Projekt obsahuje editor [tbar](tbar/README.md): v něm lze
 vytvořit několik scén s vlastními příkazy a stavem internetu, CPU nebo procesu.
 Scény se zatím přepínají v aplikaci, nikoli přímo na Touch Baru. Výstup je
-určen pro renderer `omarchy-glance` a T1Bridge, které nejsou součástí tohoto
-projektu a nebyly na tomto počítači přepnuty ani vyzkoušeny. Editor tedy
-sám o sobě nezmění současný firmwareový Touch Bar. Automatické přepínání podle
+určen pro samostatný renderer `omarchy-glance` a T1Bridge. Základní scéna
+a grafy byly na tomto počítači vyzkoušeny; nové zarovnání a automatické barvy
+ještě potřebují ověření na panelu. Automatické přepínání podle
 aplikace, výběr scén na panelu a GIFy jsou zatím pouze nápady.
 
 ## Nejčastější ovládání Omarchy
@@ -113,8 +112,9 @@ balíčky zbytečně neduplikuj. V nabídce můžeš přidávat aplikace, v term
 slouží například `omarchy pkg add <balíček>`. Před použitím AUR nebo cizího
 skriptu zkontroluj jeho zdroj a změny.
 
-**Pozor na jádro:** současné moduly Touch Baru a zvuku byly nainstalované
-ručně a jejich automatické sestavování pro další jádro není vyřešené. Před
+**Pozor na jádro:** Touch Bar nyní používá T1Bridge DKMS, ale při původní
+kontrole byl zvukový modul mimo správu balíčků. Kompatibilita s dalším jádrem
+není zaručená. Před
 `omarchy update` měj zálohu, obnovovací USB a připravený postup pro ovladače;
 po aktualizaci ověř sestavení DKMS a až pak restartuj.
 
