@@ -97,3 +97,7 @@ Pokud systém nenabootuje: v menu Limine vybrat snapshot (vytvořil ho
   provideru při dalším přihlášení a popupy po restartu je potřeba ověřit.
   Poté uživatel potvrdil funkční popup, reakci mikrofonu v audio panelu a zvuk
   z YouTube ve Firefoxu a funkční Esc.
+- 2026-11-10: po dalším restartu uživatel potvrdil Touch Bar a popup bez zásahu
+  Copilota. Hardwarová i uživatelská služba jsou aktivní, tiny-dfr vypnutý.
+  V logu se znovu objevilo varování o nedostupném desktop provideru při startu;
+  následný kontrolní dotaz na provider uspěl. Příčina varování není ověřena.
