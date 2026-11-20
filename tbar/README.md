@@ -4,9 +4,14 @@
 
 Qt aplikace pro přípravu vlastních rozložení Touch Baru na Omarchy. Základní
 scéna a tlačítka byly ověřeny na MacBookPro14,2; další widgety jsou experimentální.
-Samotná aplikace
-neinstaluje ovladač, T1Bridge ani [omarchy-glance](https://github.com/andersryanc/omarchy-macbook-touchbar-custom).
-Starší firmwareový režim bez vlastního rendereru její vlastní tlačítka nepodporuje.
+Samotná aplikace neinstaluje ovladač, T1Bridge ani
+[omarchy-glance](https://github.com/andersryanc/omarchy-macbook-touchbar-custom);
+ty popisuje [instalace](../docs/INSTALL.md). Starší firmwareový režim bez
+vlastního rendereru její vlastní tlačítka nepodporuje.
+
+Obsah: [příprava](#příprava-a-spuštění) · [použití](#použití) ·
+[formát scény](#formát-scény-json) · [náhled a zálohy](#náhled-zálohy-a-obnovení) ·
+[CLI](#cli-pro-lidi-a-ai-nástroje) · [omezení](#omezení-a-další-vývoj)
 
 ## Příprava a spuštění
 
@@ -24,9 +29,9 @@ a heslo. Nainstaluje také hook `tbar-theme-sync` pro změnu tématu, pokud ješ
 neexistuje. Při instalaci samotného balíčku jej lze přidat příkazem
 `omarchy hook install theme-set /usr/share/tbar/tbar-theme-sync`; před spuštěním
 zkontroluj, že stejnojmenný hook ještě neexistuje (příkaz jej přepisuje).
-Projektová licence
-dosud nebyla zvolena; balíček označuje vlastní kód jako nelicencovaný a není
-tím uděleno oprávnění k dalšímu šíření.
+
+Projektová licence dosud nebyla zvolena; balíček označuje vlastní kód jako
+nelicencovaný a není tím uděleno oprávnění k dalšímu šíření.
 
 ## Použití
 
@@ -35,6 +40,8 @@ pořadí. Každá scéna podporuje nejvýše 12 položek. „Použít rozložen�
 nastavení pro renderer; samotný výběr scény ji na Touch Bar neaplikuje. Na
 horní vrstvě exportu je přidané `Esc`, na vrstvě Fn `Esc` a F1–F12; jejich
 skutečné fungování závisí na ovladači, rendereru a hardwaru.
+
+### Příkazy a stavy
 
 Příkaz může být například `omarchy menu keybindings`,
 `omarchy menu toggle appearance.theme`, `omarchy agent` nebo
@@ -49,12 +56,16 @@ mohou zobrazovat i při zamčené obrazovce. Spouštění příkazů se pokouš�
 zamčení ověřit dvěma dotazy a při chybě příkaz odmítá, ale mezi kontrolou
 a spuštěním existuje časové okno: **nejde o bezpečnostní záruku**.
 
+### Ukázkové scény a grafy
+
 „Přidat ukázky“ vytvoří chybějící scény `Work`, `Monitor` a `IT Demo`, aniž
 by přepsalo existující scény se stejným názvem nebo změnilo aktuální výběr.
 `Work` nabízí zkratky a baterii, `Monitor` živé grafy CPU, RAM, sítě a disku
 a stav baterie. `IT Demo` kombinuje zkratky s grafy CPU, RAM, sítě a baterií.
 Živé widgety lze přidávat také jednotlivě. Grafy reagují na skutečnou zátěž;
 dostupnost údajů závisí na hardwaru a rendereru.
+
+### Umístění a šířky
 
 U položky klikni na „Upravit“ a vyber levou, střední nebo pravou část a šířku;
 u grafů navíc styl teček či sloupců, interval a u CPU teplotu. „Přidat mezeru“
@@ -65,11 +76,15 @@ a `space-evenly` renderer nepodporuje.
 
 ![Nastavení umístění a vzhledu grafu](screenshots/graph-settings.png)
 
+### Barvy podle tématu
+
 Volba „Barvy tlačítek podle tématu Omarchy“ platí pro celou vybranou scénu
 včetně Esc a dalších tlačítek. Po použití scény hook při změně tématu bezpečně
 aktualizuje barvy; nezasáhne do konfigurace změněné mimo editor. Grafy používají
 výchozí barvy tématu btop, které renderer průběžně sleduje. Automatická změna
 barev tlačítek vyžaduje nainstalovaný hook, není vázaná na otevřený editor.
+
+### Předvedení a klávesové zkratky
 
 Pro ukázku v IT komunitě vyber `IT Demo`, potvrď „Použít rozložení“ a ukaž,
 jak se při práci mění grafy. Tlačítko `Keys` otevře přehled zkratek; výběr
@@ -82,9 +97,12 @@ nebo sdílet obrazovku, zkontroluj, zda neobsahuje osobní údaje.
 | `Ctrl + Enter` | Potvrzení použití scény |
 | `Esc` | Zavření dialogu |
 
+## Formát scény (JSON)
+
 Scény jsou v `~/.config/tbar/profiles.json` (respektuje se `XDG_CONFIG_HOME`).
 Před ručními úpravami soubor zálohuj a zavři editor; příkazy z neznámých
-zdrojů nespouštěj bez kontroly.
+zdrojů nespouštěj bez kontroly. Bezpečnější než ruční úprava je
+[CLI](#cli-pro-lidi-a-ai-nástroje): `tbar validate` a `tbar import`.
 Příklad položek scény (vynechaná `section` znamená `left`):
 
 ```json
@@ -100,26 +118,42 @@ Příklad položek scény (vynechaná `section` znamená `left`):
 }
 ```
 
-`width` u grafu znamená šířku samotného grafu, ne celé položky. Dostupné
-hodnoty `section` jsou `left`, `center`, `right`; `style` je `dots` nebo
-`bars`. Úplný soubor obsahuje `version`, `selected` a pole `profiles`.
-Položky bez `kind` jsou tlačítka se shellovým příkazem v `command`. Pro
-`kind: "widget"` je `command` jeden z `cpu`, `memory`, `network`, `disk`,
-`battery`; `width` je 10–500 px a `interval` 1–60 sekund. Teplotu podporuje
-CPU. `kind: "spacer"` má šířku v `width`. Stavové položky mají `kind`
-`internet`, `temperature` nebo `process`; u posledního je v `command` přesný
-název procesu (1–15 znaků: písmena, číslice, `.`, `_`, `+`, `-`).
-Scéna obsahuje nejvýše 12 položek; výchozí `Esc` a vrstvu Fn doplňuje editor.
+Úplný soubor obsahuje `version`, `selected` a pole `profiles`. Scéna má
+nejvýše 12 položek; výchozí `Esc` a vrstvu Fn doplňuje editor. Přesnou
+definici vypíše `tbar schema --json`.
+
+| `kind` | Význam | `command` |
+| --- | --- | --- |
+| vynecháno nebo `button` | tlačítko | shellový příkaz |
+| `widget` | živý graf | `cpu`, `memory`, `network`, `disk` nebo `battery` |
+| `internet` | stav připojení | nepoužívá se |
+| `temperature` | teplota ze senzoru `coretemp` | nepoužívá se |
+| `process` | stav aplikace | přesný název procesu (1–15 znaků: písmena, číslice, `.`, `_`, `+`, `-`) |
+| `spacer` | prázdné místo | prázdný |
+
+Další pole položky:
+
+- `label`: popisek, nejvýše 16 znaků.
+- `section`: `left` (výchozí), `center` nebo `right`.
+- `width`: 10–500 px; u grafu jde o šířku samotného grafu, ne celé položky.
+- `style`: `dots` nebo `bars`, jen pro grafy.
+- `interval`: 1–60 sekund, jen pro grafy.
+- `temperature`: `true` nebo `false`, jen pro graf `cpu`.
+
+## Náhled, zálohy a obnovení
+
 Živý náhled zobrazuje vybranou scénu i volitelnou vrstvu Fn bez jejího použití.
 Obnovuje se přibližně po pěti sekundách pomocí `omarchy-glance preview`: údaje
 jsou skutečné, ale historie grafů je krátká, protože se každý snímek vzorkuje
 znovu. Stavové příkazy se při náhledu spouštějí; tlačítka náhledu nejsou aktivní.
 V menším okně lze obsahem editoru posouvat; při úzkém okně i vodorovně.
+
 Při prvním použití editor zaznamená původní konfiguraci rendereru v
 `~/.config/tbar/original-renderer.json` a před každým přepsáním existujícího
 `~/.config/omarchy-glance/touchbar.json` vytvoří další zálohu vedle něj.
 „Obnovit původní“ vrací stav před prvním použitím a odmítne přepsat změny
 provedené mezitím mimo aplikaci. Zálohy nemaž, dokud je nepotřebuješ.
+
 Export obsahuje absolutní cestu ke spuštěnému `tbar`; po přesunu aplikace
 nebo instalaci balíčku je nutné scénu znovu použít.
 

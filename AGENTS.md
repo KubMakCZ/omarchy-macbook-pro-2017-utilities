@@ -4,6 +4,31 @@ Tento soubor je přenosný kontext pro práci v tomto repozitáři. Podrobná
 historie požadavků, nápady a nehotové úkoly jsou v [ROADMAP.md](ROADMAP.md).
 Neber starší pozorování jako důkaz současného stavu systému.
 
+## Rychlá orientace
+
+| Kde | Co tam je |
+| --- | --- |
+| `setup.sh` | rozcestník kroků; `--check` jen čte, ostatní volby viz `--help` |
+| `diagnose.sh` | diagnostika bez změn a bez názvů sítí či MAC adres |
+| `setup-keyboard.sh`, `install-*.sh`, `enable-glance.sh` | jednotlivé instalační kroky |
+| `*.service`, `touchbar-rebind.sh`, `usb-controllers-active.sh` | systémové služby a jejich skripty |
+| `tbar/src/` | editor: `backend.cpp` (scény, export, zálohy), `main.cpp` (CLI), `Main.qml` (GUI) |
+| `tbar/src/profile-schema.json`, `tbar/src/agent-skill.md` | schéma scény a návod pro agenty, obojí vložené do binárky |
+| `tests/`, `tbar/tests/` | testy instalačních ochran a editoru |
+| `docs/`, `TIPY.md`, `ROADMAP.md` | návody, stav hardwaru, plán |
+
+Příkazy, které lze spouštět bez ptaní (nic nemění mimo `tbar/build`):
+
+```bash
+bash setup.sh --check
+python3 tests/installer_test.py
+bash tbar/bin/build && bash tbar/bin/test
+```
+
+Vše ostatní v `setup.sh`, `sudo`, `systemctl` se změnou stavu, `tbar apply`,
+`tbar restore`, `tbar select` a `omarchy-glance on/off` mění skutečný systém
+nebo Touch Bar: nejdřív se zeptej.
+
 ## Záměr a spolupráce
 
 - Cílem je bezpečně a opakovaně zprovoznit **MacBookPro14,2 (13" 2017, T1,
@@ -64,3 +89,28 @@ Neber starší pozorování jako důkaz současného stavu systému.
   potvrzení na skutečném hardwaru.
 - Projektová licence zatím nebyla zvolena; cizí projekty mají vlastní licence.
   OpenCore je samostatný budoucí nápad, nikoli součást současné instalace.
+
+## Konvence při úpravách
+
+- **Skripty:** `set -euo pipefail`, české hlášky, chyby na stderr. Systémové
+  kroky nejdřív ověří model `MacBookPro14,2`. Existující odlišný soubor ani
+  symbolický odkaz se nepřepisuje: skript skončí chybou a nic nezmění.
+  Opakované spuštění musí být bezpečné. Novou ochranu pokryj v
+  `tests/installer_test.py`.
+- **Editor:** změna formátu scény znamená upravit společně validaci v
+  `backend.cpp`, `profile-schema.json`, `agent-skill.md`, příklad a tabulku v
+  [tbar/README.md](tbar/README.md) a testy. Texty GUI jdou přes překlady v
+  `tbar/src/i18n/`. Při změně obsahu balíčku zvyš `pkgrel` v `tbar/PKGBUILD`.
+- **Dokumentace:** každý fakt má jedno místo. Stav hardwaru a workaroundy
+  patří do [docs/HARDWARE.md](docs/HARDWARE.md), postup do
+  [docs/INSTALL.md](docs/INSTALL.md), plány do [ROADMAP.md](ROADMAP.md),
+  každodenní tipy do [TIPY.md](TIPY.md); [README.md](README.md) je jen přehled
+  s odkazy. [docs/T1BRIDGE-PLAN.md](docs/T1BRIDGE-PLAN.md) je historický
+  deník: nepřepisuj ho, jen případně přidej datovaný záznam.
+- **Tvrzení o funkčnosti:** rozlišuj „potvrzeno uživatelem na panelu“,
+  „prošly testy“ a „neověřeno“. K ověřenému stavu piš datum a verze. Když se
+  změní verze jádra, T1Bridge nebo Omarchy, aktualizuj je v README i
+  HARDWARE.md společně.
+- **Hotovo znamená:** testy prošly, dokumentace odpovídá změně, `git status`
+  neobsahuje cizí ani citlivé soubory, změna je commitnutá a odeslaná.
+  Co nešlo ověřit na skutečném hardwaru, výslovně uveď.

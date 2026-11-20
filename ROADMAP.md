@@ -19,6 +19,8 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
+- Zdroj `tbar` v repozitáři je `0.1.0-6` (rozšířený agentní skill); tento
+  balíček zatím nebyl nainstalován.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
 - Jde jen o stavové pozorování v daném okamžiku. Aktivní služba sama o sobě
@@ -69,6 +71,8 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 - [ ] Připravit a ověřit skutečný návrat po změně T1 stacku; současný
   historický návrh návratu není ověřený. Návrat z `omarchy-glance` na
   vestavěný renderer není totéž co odstranění T1Bridge.
+- [ ] Přidat CI (kontrola skriptů, `tests/installer_test.py`, sestavení a
+  testy `tbar` v kontejneru Arch), aby příspěvky od dalších lidí šly ověřit.
 - [ ] Zvážit přehlednější diagnostiku, kontrolu závislostí a instrukce pro
   případ, kdy existuje odlišný renderer nebo lokálně upravená konfigurace.
   Nikdy ji bez souhlasu nepřepsat.
@@ -106,6 +110,9 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 - [ ] Prozkoumat vzhled OpenCore bootloaderu s logy Macu a Omarchy jako
   **samostatný budoucí úkol**. Žádné změny bootloaderu či EFI bez výslovného
   souhlasu, ověřeného plánu návratu a záloh.
+- [ ] Sbírat hlášení z dalších strojů (šablona v `.github/ISSUE_TEMPLATE/`)
+  a podle nich doplňovat [docs/HARDWARE.md](docs/HARDWARE.md). Zvážit anglický
+  překlad hlavních návodů.
 - [ ] Vybrat s vlastníkem projektu licenci. Zatím žádná licence vlastního kódu
   nebyla zvolena; cizí komponenty mají vlastní podmínky.
 
@@ -132,12 +139,15 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 
 | Soubor | Účel |
 | --- | --- |
-| [README.md](README.md), [TIPY.md](TIPY.md) | Úvod a český uživatelský průvodce |
+| [README.md](README.md), [TIPY.md](TIPY.md) | Úvod, přehled stavu a český uživatelský průvodce |
 | [docs/INSTALL.md](docs/INSTALL.md) | Postup instalace a současná omezení |
+| [docs/HARDWARE.md](docs/HARDWARE.md) | Stav hardwaru, známé potíže a workaroundy |
+| [CONTRIBUTING.md](CONTRIBUTING.md), `.github/ISSUE_TEMPLATE/` | Hlášení z jiných strojů a pravidla příspěvků |
 | [docs/T1BRIDGE-PLAN.md](docs/T1BRIDGE-PLAN.md) | Historie, záloha a neověřený návrat |
 | `setup.sh`, `install-glance.sh`, `enable-glance.sh` | Jednotlivé instalační kroky |
 | `tbar/src/backend.cpp`, `main.cpp`, `Main.qml` | Logika scén, CLI a GUI |
 | [tbar/README.md](tbar/README.md) | Možnosti, bezpečnost a CLI editoru |
+| `tbar/src/agent-skill.md` | Návod pro AI agenty, instaluje `tbar skill install` |
 | `tbar/tests/`, `tests/installer_test.py` | Testy editoru a instalace |
 
 Ověření změn editoru: `bash tbar/bin/build && bash tbar/bin/test`. Ověření

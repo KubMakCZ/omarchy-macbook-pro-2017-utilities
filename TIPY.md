@@ -2,7 +2,8 @@
 
 Tyto poznámky se týkají **MacBookPro14,2 (13", 2017, Touch Bar, T1)**.
 Jiné modely a budoucí verze Omarchy se mohou chovat jinak. Německý potisk
-kláves se při českém rozložení nezmění.
+kláves se při českém rozložení nezmění. Stav hardwaru a řešení potíží jsou
+v [docs/HARDWARE.md](docs/HARDWARE.md), instalace v [docs/INSTALL.md](docs/INSTALL.md).
 
 ## Klávesnice: přechod z Windows
 

@@ -1,142 +1,115 @@
-# Omarchy na MacBooku Pro 13" 2017
+# Omarchy na MacBooku Pro 13" 2017 (Touch Bar)
 
-Poznámky k modelu **MacBookPro14,2 (A1706, Touch Bar, čip T1)**. Ostatní
-modely mohou vyžadovat jiné ovladače. Tento projekt zatím není kompletní
-instalátor hardwaru.
+Poznámky, skripty a editor Touch Baru pro **MacBookPro14,2 (A1706, 13" 2017,
+Touch Bar, čip T1)** s [Omarchy](https://omarchy.org). Cílem je bezpečný a
+opakovatelný postup po instalaci: česká klávesnice, hardware, Touch Bar
+s vlastními scénami.
 
-Praktické tipy jsou v [TIPY.md](TIPY.md), postup pro čistou instalaci
-v [docs/INSTALL.md](docs/INSTALL.md), editor scén v [tbar/README.md](tbar/README.md)
-a další práce a předání jinému agentovi v [ROADMAP.md](ROADMAP.md).
-Pokyny pro AI agenty jsou v [AGENTS.md](AGENTS.md).
+> **English summary:** Notes, post-install scripts and a Touch Bar scene editor
+> (`tbar`) for running Omarchy on a MacBookPro14,2 (13" 2017, T1). Documentation
+> is in Czech. Verified on a single machine only; other models are untested.
+> Back up the Apple EFI partition before installing Linux.
 
-## Rychlý postup
+Projekt je **experimentální** a ověřený na jediném počítači. Není to kompletní
+automatický instalátor a jiné modely MacBooku mohou vyžadovat jiné ovladače.
 
-V adresáři projektu lze jednotlivé kroky opakovat:
+## Stav na testovaném stroji
 
-```bash
-bash setup.sh --check       # pouze diagnostika, bez změn
-bash setup.sh --keyboard    # české QWERTZ pro aktuálního uživatele
-bash setup.sh --build-app   # sestavení editoru, bez instalace
-bash setup.sh --install-app # sestavení a instalace editoru
-bash setup.sh --renderer-build # sestavení a instalace rendereru, bez aktivace
-bash setup.sh --renderer-enable # výslovná aktivace rendereru po instalaci T1Bridge
-bash setup.sh --usb-power   # volitelná oprava USB; sudo
-```
+Naposledy zkontrolováno 2026-11-20: Omarchy 4.5.0, jádro `7.2.15-1-omarchy`,
+T1Bridge 0.1.12. Podrobnosti, známé potíže a workaroundy jsou
+v [docs/HARDWARE.md](docs/HARDWARE.md).
 
-Jednotlivé kroky nic samy neformátují ani nepřepínají T1 ovladače. Instalace
-editoru může instalovat balíčkové závislosti a vyžádat si heslo. Renderer se
-sestavuje z připnuté revize externího projektu a nenahrazuje odlišný existující
-soubor. T1Bridge je zatím nutné nainstalovat podle [postupu](docs/INSTALL.md);
-nejde o plně automatický instalátor a čistou instalaci jsme zatím neověřili.
+| Součást | Stav | Poznámka |
+| --- | --- | --- |
+| Klávesnice a touchpad | funguje | vestavěný `applespi` |
+| České QWERTZ | funguje | jen grafická relace; německý potisk zůstává |
+| Wi-Fi (BCM43602) | funguje | `brcmfmac`; 5 GHz neověřeno |
+| Reproduktory a mikrofon | funguje | zvukový modul je mimo správu balíčků |
+| Touch Bar, Esc, dotyk | funguje | T1Bridge + `omarchy-glance`, ověřeno i po restartu |
+| Vlastní scény Touch Baru | funguje | editor [tbar](tbar/README.md); část funkcí experimentální |
+| USB zařízení | funguje s workaroundem | volitelná služba, viz [USB](docs/HARDWARE.md#usb-zařízení-se-po-odpojení-znovu-neobjeví) |
+| Uspání a probuzení | známý problém | T1Bridge ho nepodporuje; nezkoušeno |
+| Kamera, Bluetooth, sluchátka, externí monitor | neověřeno | |
+| Touch ID | neověřeno | nebylo nastaveno |
 
-Licenci vlastního kódu jsme ještě
-nezvolili; před přijetím či šířením příspěvků ji bude nutné určit. Cizí
-projekty mají vlastní licence a nejsou součástí tohoto repozitáře.
+„Funguje“ znamená potvrzeno na tomto jednom stroji s uvedenými verzemi.
+Po aktualizaci jádra se stav může změnit.
 
 ## Než začneš
 
-- Před novou instalací zálohuj na jiné médium původní Apple EFI oddíl včetně
-  `EFI/APPLE/EMBEDDEDOS` a souboru `FDRData`. Je specifický pro daný počítač:
-  **nezveřejňuj ho na GitHubu**. Smazání může vyřadit Touch Bar a kameru.
-- Nepřeformátovávej Apple EFI oddíl. Podrobnosti a postup zálohy jsou na
+- **Zálohuj Apple EFI oddíl** na jiné médium, včetně `EFI/APPLE/EMBEDDEDOS`
+  a souboru `FDRData`. Je specifický pro daný počítač: **nikdy ho
+  nezveřejňuj**. Jeho smazání může vyřadit Touch Bar a kameru.
+- Apple EFI oddíl nepřeformátovávej. Postup zálohy popisuje
   [ArchWiki pro MacBookPro14,2](https://wiki.archlinux.org/title/MacBookPro14,2).
-- Před změnami ovladačů nebo bootování si připrav obnovovací USB a zálohu dat.
+- Před změnami ovladačů nebo bootování si připrav obnovovací USB, zálohu dat
+  a heslo, které umíš napsat i na přihlašovací obrazovce.
 
-## Česká klávesnice QWERTZ
-
-V běžící relaci Hyprlandu spusť:
-
-```bash
-bash setup-keyboard.sh
-```
-
-Skript nastaví české rozložení v uživatelském souboru Omarchy, případný
-předchozí soubor zazálohuje a znovu načte Hyprland. Německé popisky zůstanou,
-česká diakritika a další symboly tedy nebudou odpovídat potisku. Toto
-nenastavuje klávesnici pro přihlašování ani pro textovou konzoli.
-Jiné rozložení lze vybrat pomocí `omarchy setup keyboard`.
-
-## Diagnostika
+## Rychlý postup
 
 ```bash
-bash diagnose.sh
+git clone https://github.com/KubMakCZ/omarchy-macbook-pro-2017-utilities.git
+cd omarchy-macbook-pro-2017-utilities
+bash setup.sh --check
 ```
 
-Výstup ukazuje model, jádro, stav vybraných ovladačů, DKMS a síťových
-rozhraní. Neobsahuje záměrně názvy Wi-Fi sítí ani MAC adresy, ale před
-zveřejněním jej vždy zkontroluj.
+`--check` pouze čte stav a nic nemění. Další kroky lze spouštět jednotlivě
+a opakovaně:
 
-## Touch Bar: dva neslučitelné postupy
+| Příkaz | Co udělá | Mění systém? |
+| --- | --- | --- |
+| `bash setup.sh --check` | diagnostika modelu, ovladačů, služeb a nástrojů | ne |
+| `bash setup.sh --keyboard` | české QWERTZ pro aktuálního uživatele | uživatelská konfigurace, se zálohou |
+| `bash setup.sh --usb-power` | volitelná oprava USB řadičů | systémová služba, `sudo` |
+| `bash setup.sh --renderer-build` | sestaví a nainstaluje renderer `omarchy-glance` | `~/.local/bin`, bez aktivace |
+| `bash setup.sh --renderer-enable` | aktivuje renderer po instalaci T1Bridge | uživatelské služby, restart Touch Baru |
+| `bash setup.sh --build-app` | sestaví editor `tbar` | ne |
+| `bash setup.sh --install-app` | sestaví a nainstaluje balíček `tbar` | balíčky, může žádat heslo |
 
-Na testovaném počítači nyní běží **T1Bridge a omarchy-glance**. Při problémech
-nejprve zkontroluj `systemctl --user status t1-touchbar.service --no-pager`
-a `sudo t1bridge status`; viz [instalace a řešení problémů](docs/INSTALL.md).
-Starou službu uvedenou níže na tomto systému nezapínej.
+Žádný krok neformátuje disky ani nepřepíná T1 ovladače a odlišné existující
+soubory se nepřepisují. **T1Bridge se zatím instaluje ručně** podle
+[docs/INSTALL.md](docs/INSTALL.md); celý postup na čistém systému ještě nebyl
+zopakován.
 
-Historicky na tomto stroji před přechodem na T1Bridge jedno rozhraní iBridge
-převzal `hid-sensor-hub`. Projekt obsahuje starší službu pro jeho opětovné
-připojení k již nainstalovanému firmwareovému ovladači:
+## Dokumentace
+
+| Soubor | Obsah |
+| --- | --- |
+| [docs/INSTALL.md](docs/INSTALL.md) | postup od čistého Omarchy po vlastní Touch Bar |
+| [docs/HARDWARE.md](docs/HARDWARE.md) | stav hardwaru, známé potíže, USB workaround, starý ovladač |
+| [TIPY.md](TIPY.md) | klávesnice, zkratky a každodenní používání |
+| [tbar/README.md](tbar/README.md) | editor scén Touch Baru, formát JSON a CLI |
+| [ROADMAP.md](ROADMAP.md) | hotové věci, plány a nápady |
+| [docs/T1BRIDGE-PLAN.md](docs/T1BRIDGE-PLAN.md) | historický deník přechodu na T1Bridge |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | jak nahlásit zkušenost z jiného stroje a jak přispět |
+| [AGENTS.md](AGENTS.md) | pokyny pro AI agenty pracující v repozitáři |
+
+## Touch Bar ve zkratce
+
+Panel obsluhuje [T1Bridge](https://github.com/standardagents/t1bridge)
+a renderer [omarchy-glance](https://github.com/andersryanc/omarchy-macbook-touchbar-custom).
+Editor `tbar` z tohoto repozitáře vytváří scény s vlastními tlačítky, stavy
+a grafy:
+
+![Editor Touch Baru s ukázkovou scénou a živým náhledem](tbar/screenshots/editor.png)
+
+Když panel nesvítí, začni tady:
 
 ```bash
-sudo bash install-touchbar-service.sh
-systemctl status omarchy-mbp-touchbar.service
+systemctl --user status t1-touchbar.service --no-pager
 ```
-
-**Nepoužívat společně s T1Bridge nebo konkurenčním rendererem.** Instalátor
-staré služby odmítne známý aktivní či nainstalovaný T1Bridge. Služba
-neinstaluje ovladač a vyžaduje `apple-ibridge-hid`; po aktualizaci jádra
-nemusí fungovat. Restart byl v tehdejším režimu ověřen, uspání nikoli.
-
-## Poznatky z aktuální instalace
-
-- BCM43602 používá `brcmfmac` a balíček `linux-firmware-broadcom`. Wi-Fi byla
-  připojena; pásmo 5 GHz a chování po uspání nejsou ověřené. Funkční ovladač
-  není důvod preventivně nahrazovat `broadcom-wl`.
-- Vestavěný `applespi` obsluhuje klávesnici a touchpad. Systém detekuje iBridge
-  `05ac:8600` a kamerové zařízení, jejich reálná funkce se musí vyzkoušet.
-- Touch Bar nyní používá balíčky `t1bridge` a `t1bridge-dkms`; zvukový modul
-  byl při původní kontrole mimo správu balíčků. Staré položky DKMS pro klávesnici
-  nebyly sestavené pro tehdejší jádro. Po aktualizaci ověř sestavení DKMS,
-  initramfs/UKI a funkci zařízení; kompatibilita budoucích jader není zaručena.
-- Alternativní [apple-touchbar-driver](https://github.com/Phennova/apple-touchbar-driver)
-  se pro aktuální jádro sestavil, ale **nebyl nainstalován ani vyzkoušen na
-  tomto stroji**. Jeho instalační skript mění DKMS a systémové služby; nejprve
-  ověř kompatibilitu s existujícím nastavením.
-- Podle uživatele fungují reproduktory i mikrofon. Kameru a probuzení z uspání
-  je ještě třeba vyzkoušet.
-- Touch ID na našem stroji nebylo nastaveno ani ověřeno. T1Bridge nabízí
-  experimentální podporu s dalšími podmínkami.
-
-Podrobnosti o Wi-Fi, zvuku, Touch Baru a uspávání se mohou měnit podle verze
-jádra; před zásahem ověř aktuální [ArchWiki](https://wiki.archlinux.org/title/MacBookPro14,2).
-
-## USB zařízení se po odpojení znovu neobjeví
-
-Na tomto MacBooku se po odpojení flešek přestala nová USB zařízení hlásit
-jádru. `udiskie` přitom běžel a staré přípojné body zmizely. Dočasné vypnutí
-runtime uspávání obou externích USB řadičů umožnilo opětovné připojení;
-jde o předběžně ověřený workaround, nikoli potvrzenou příčinu závady.
-Systém nyní při vložení flešku automaticky připojuje pomocí `udiskie`.
-
-Pro nastavení po každém startu (jen MacBookPro14,2 s odpovídajícími PCI
-řadiči) lze spustit:
 
 ```bash
-sudo bash install-usb-power-service.sh
-systemctl status omarchy-mbp-usb-power.service --no-pager
+sudo t1bridge status
 ```
 
-Služba nastaví `power/control=on` u obou externích řadičů při startu.
-Může mírně zvýšit spotřebu; po restartu byla ověřena, po uspání nikoli.
-Pokud nové USB zařízení nevidí ani `lsblk`, přeinstalace `udiskie`
-to sama nevyřeší.
+Stará služba `omarchy-mbp-touchbar.service` a `tiny-dfr` **nesmějí běžet
+společně s T1Bridge**; viz [docs/HARDWARE.md](docs/HARDWARE.md#touch-bar).
 
-Návrat k automatickému uspávání (změna zmizí i restartem po vypnutí služby):
+## Licence a příspěvky
 
-```bash
-sudo systemctl disable --now omarchy-mbp-usb-power.service
-sudo sh -c 'echo auto > /sys/bus/pci/devices/0000:06:00.0/power/control; echo auto > /sys/bus/pci/devices/0000:7c:00.0/power/control'
-```
-
-Disky před odpojením vždy vysuň. Při hlášení nečistého FAT/exFAT zkontroluj
-souborový systém až po odpojení oddílu a před opravou zazálohuj důležitá data.
+Licence vlastního kódu zatím nebyla zvolena; do té doby není uděleno oprávnění
+k dalšímu šíření a před přijímáním příspěvků ji bude nutné určit. Cizí projekty
+(T1Bridge, omarchy-glance, Omarchy) mají vlastní licence a nejsou součástí
+tohoto repozitáře. Zkušenosti z jiných strojů jsou vítané, viz
+[CONTRIBUTING.md](CONTRIBUTING.md).

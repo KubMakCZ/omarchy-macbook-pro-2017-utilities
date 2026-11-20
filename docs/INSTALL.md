@@ -6,6 +6,17 @@ byl použit na našem stroji, ale kompletní instalace od začátku na čistém
 Omarchy zatím nebyla zopakována. Automatizace nepokrývá vše; chyby a rozdíly
 verzí je nutné řešit před pokračováním.
 
+| Krok | Co se děje | Automatizace |
+| --- | --- | --- |
+| [1](#1-před-instalací-linuxu) | záloha dat a Apple EFI | ručně |
+| [2](#2-kontrola-a-základní-nastavení) | diagnostika, klávesnice, volitelně USB | `setup.sh` |
+| [3](#3-t1bridge-podpis-balíčky-a-restart) | T1Bridge: klíč, repozitář, balíčky, restart | **ručně** |
+| [4](#4-editor-a-vlastní-renderer) | renderer `omarchy-glance` a editor `tbar` | `setup.sh` |
+| [5](#5-kontrola-a-návrat) | ověření po restartu | ručně |
+
+Každý krok dokonči a ověř, než začneš další. Stav hardwaru a známé potíže
+shrnuje [HARDWARE.md](HARDWARE.md).
+
 ## 1. Před instalací Linuxu
 
 Zálohuj osobní data a připrav obnovovací USB. Zachovej původní Apple EFI oddíl
@@ -16,7 +27,7 @@ ověř, že instalátor zachová Apple EFI; viz
 [ArchWiki](https://wiki.archlinux.org/title/MacBookPro14,2) a
 [bezpečnostní upozornění T1Bridge](https://github.com/standardagents/t1bridge#readme).
 
-Měj funkčné heslo, napájení a cestu k obnově systému. T1Bridge aktuálně
+Měj funkční heslo, napájení a cestu k obnově systému. T1Bridge aktuálně
 nepodporuje spolehlivé systémové uspání/probuzení; na tomto modelu byl hlášen
 černý displej po probuzení. Není zaručena kompatibilita každého dalšího jádra.
 
