@@ -87,7 +87,8 @@ nebo Touch Bar: nejdřív se zeptej.
 - Testy instalačních kroků: `python3 tests/installer_test.py`. Po změně
   editoru: `bash tbar/bin/build && bash tbar/bin/test`. Testy nenahrazují
   potvrzení na skutečném hardwaru.
-- Projektová licence zatím nebyla zvolena; cizí projekty mají vlastní licence.
+- Vlastní kód je pod licencí MIT ([LICENSE](LICENSE)); cizí projekty mají vlastní
+  licence a jejich kód se do repozitáře nekopíruje bez kontroly kompatibility.
   OpenCore je samostatný budoucí nápad, nikoli součást současné instalace.
 
 ## Konvence při úpravách

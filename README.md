@@ -108,8 +108,9 @@ společně s T1Bridge**; viz [docs/HARDWARE.md](docs/HARDWARE.md#touch-bar).
 
 ## Licence a příspěvky
 
-Licence vlastního kódu zatím nebyla zvolena; do té doby není uděleno oprávnění
-k dalšímu šíření a před přijímáním příspěvků ji bude nutné určit. Cizí projekty
-(T1Bridge, omarchy-glance, Omarchy) mají vlastní licence a nejsou součástí
-tohoto repozitáře. Zkušenosti z jiných strojů jsou vítané, viz
+Vlastní kód a dokumentace jsou pod [licencí MIT](LICENSE): smíš je používat,
+upravovat a šířit, pokud zachováš text licence. Software je poskytován bez
+záruky; skripty zasahují do ovladačů a služeb, používáš je na vlastní riziko.
+Cizí projekty (T1Bridge, omarchy-glance, Omarchy) mají vlastní licence a nejsou
+součástí tohoto repozitáře. Zkušenosti z jiných strojů jsou vítané, viz
 [CONTRIBUTING.md](CONTRIBUTING.md).

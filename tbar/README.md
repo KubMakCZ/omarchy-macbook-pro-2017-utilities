@@ -30,8 +30,8 @@ neexistuje. Při instalaci samotného balíčku jej lze přidat příkazem
 `omarchy hook install theme-set /usr/share/tbar/tbar-theme-sync`; před spuštěním
 zkontroluj, že stejnojmenný hook ještě neexistuje (příkaz jej přepisuje).
 
-Projektová licence dosud nebyla zvolena; balíček označuje vlastní kód jako
-nelicencovaný a není tím uděleno oprávnění k dalšímu šíření.
+Editor je pod [licencí MIT](../LICENSE); balíček ji instaluje do
+`/usr/share/licenses/tbar/`.
 
 ## Použití
 

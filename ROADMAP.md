@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-6` (rozšířený agentní skill); tento
+- Zdroj `tbar` v repozitáři je `0.1.0-7` (rozšířený agentní skill, licence MIT); tento
   balíček zatím nebyl nainstalován.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
@@ -113,8 +113,8 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 - [ ] Sbírat hlášení z dalších strojů (šablona v `.github/ISSUE_TEMPLATE/`)
   a podle nich doplňovat [docs/HARDWARE.md](docs/HARDWARE.md). Zvážit anglický
   překlad hlavních návodů.
-- [ ] Vybrat s vlastníkem projektu licenci. Zatím žádná licence vlastního kódu
-  nebyla zvolena; cizí komponenty mají vlastní podmínky.
+- [x] Licence vlastního kódu: MIT, zvolena 2026-11-20 ([LICENSE](LICENSE)).
+  Cizí komponenty mají vlastní podmínky.
 
 ## Bezpečnost a zásady pro dalšího agenta
 

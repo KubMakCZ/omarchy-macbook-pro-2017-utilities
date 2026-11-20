@@ -4,11 +4,11 @@ Projekt je ověřený na jediném MacBooku Pro 14,2, takže nejcennější jsou
 zkušenosti z dalších strojů a verzí. Dokumentace je česky; hlášení můžeš psát
 česky i anglicky.
 
-## Nejdřív licence
+## Licence
 
-Licence vlastního kódu **zatím nebyla zvolena**. Dokud se to nezmění, nelze
-kód dál šířit a větší příspěvky kódu raději předem domluv v issue. Hlášení
-o hardwaru, opravy návodů a nápady jsou vítané už teď.
+Projekt je pod [licencí MIT](LICENSE). Odesláním příspěvku souhlasíš s jeho
+zveřejněním pod stejnou licencí. Nevkládej cizí kód, jehož licence to
+neumožňuje; větší změny raději předem domluv v issue.
 
 ## Hlášení o hardwaru
 
