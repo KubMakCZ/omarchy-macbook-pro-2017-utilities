@@ -1,8 +1,9 @@
 # Plán a předání projektu
 
-Stav k 2026-11-10. Tento dokument shrnuje zadání a nápady z vývoje, aby na ně
-mohl navázat člověk nebo jiný AI agent. Nejde o slib podpory jiných modelů ani
-o důkaz, že je vše hotové. Novější skutečný stav ověř v kódu a Gitu.
+Požadavky a plán zkontrolovány 2026-11-20; pozorovaný stav instalace níže.
+Tento dokument shrnuje zadání a nápady z vývoje, aby na ně mohl navázat člověk
+nebo jiný AI agent. Nejde o slib podpory jiných modelů ani o důkaz, že je vše
+hotové. Novější skutečný stav ověř v kódu a Gitu.
 
 ## Cíl
 
@@ -11,6 +12,22 @@ bezpečný, opakovatelný post-install postup pro čistý systém, české tipy 
 užitečné aplikace včetně přizpůsobitelného Touch Baru. Uživatel chce nástroje,
 které pomohou i dalším lidem, ne pouze jednorázovou opravu jeho počítače.
 Rozšíření podpory na jiné Macy se musí samostatně ověřit.
+
+## Aktuální kontrola stroje (2026-11-20)
+
+- Repozitář `main` byl čistý; lokální větev odpovídala `origin/main` na
+  commitu `9461ffe` při kontrole.
+- Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
+  `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
+- Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
+  systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
+- Jde jen o stavové pozorování v daném okamžiku. Aktivní služba sama o sobě
+  nepotvrzuje funkčnost všech funkcí ani stav po budoucím restartu.
+- Starší renderer byl samostatně sestaven a náhled ověřen v izolované
+  konfiguraci. Nový bezpečný aktivační skript byl testován proti připnutému
+  upstream rendereru a v simulovaných konfliktech; na čisté instalaci nebyl
+  spuštěn. Na skutečném stroji už renderer aktivní je, proto jej test nesmí
+  znovu přepínat ani restartovat.
 
 ## Co už fungovalo
 
