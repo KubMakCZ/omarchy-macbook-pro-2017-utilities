@@ -11,6 +11,7 @@ Neber starší pozorování jako důkaz současného stavu systému.
 | `setup.sh` | rozcestník kroků; `--check` jen čte, ostatní volby viz `--help` |
 | `diagnose.sh` | diagnostika bez změn a bez názvů sítí či MAC adres |
 | `setup-keyboard.sh`, `install-*.sh`, `enable-glance.sh` | jednotlivé instalační kroky |
+| `install-no-suspend.sh`, `key-chatter-check.py` | vypnutí uspání do RAM a měření zdvojených kláves |
 | `*.service`, `touchbar-rebind.sh`, `usb-controllers-active.sh` | systémové služby a jejich skripty |
 | `tbar/src/` | editor: `backend.cpp` (scény, export, zálohy), `main.cpp` (CLI), `Main.qml` (GUI) |
 | `tbar/src/profile-schema.json`, `tbar/src/agent-skill.md` | schéma scény a návod pro agenty, obojí vložené do binárky |

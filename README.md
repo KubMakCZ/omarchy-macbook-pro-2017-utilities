@@ -28,7 +28,7 @@ v [docs/HARDWARE.md](docs/HARDWARE.md).
 | Touch Bar, Esc, dotyk | funguje | T1Bridge + `omarchy-glance`, ověřeno i po restartu |
 | Vlastní scény Touch Baru | funguje | editor [tbar](tbar/README.md); část funkcí experimentální |
 | USB zařízení | funguje s workaroundem | volitelná služba, viz [USB](docs/HARDWARE.md#usb-zařízení-se-po-odpojení-znovu-neobjeví) |
-| Uspání a probuzení | známý problém | T1Bridge ho nepodporuje; nezkoušeno |
+| Uspání a probuzení | **nefunguje** | počítač se neprobudí; viz [ochrana](docs/HARDWARE.md#uspání-a-probuzení) |
 | Kamera, Bluetooth, sluchátka, externí monitor | neověřeno | |
 | Touch ID | neověřeno | nebylo nastaveno |
 
@@ -53,7 +53,8 @@ cd omarchy-macbook-pro-2017-utilities
 bash setup.sh --check
 ```
 
-`--check` pouze čte stav a nic nemění. Další kroky lze spouštět jednotlivě
+`--check` pouze čte stav, nic nemění a na konci vypíše, který krok instalace
+chybí. Další kroky lze spouštět jednotlivě
 a opakovaně:
 
 | Příkaz | Co udělá | Mění systém? |
@@ -61,6 +62,9 @@ a opakovaně:
 | `bash setup.sh --check` | diagnostika modelu, ovladačů, služeb a nástrojů | ne |
 | `bash setup.sh --keyboard` | české QWERTZ pro aktuálního uživatele | uživatelská konfigurace, se zálohou |
 | `bash setup.sh --usb-power` | volitelná oprava USB řadičů | systémová služba, `sudo` |
+| `bash setup.sh --no-suspend` | vypne uspání do RAM, ze kterého se počítač neprobudí | nastavení systemd, `sudo`; návrat `--suspend-restore` |
+| `bash setup.sh --keyboard-check` | změří zdvojování kláves, text neukládá | ne, `sudo` kvůli čtení klávesnice |
+| `bash setup.sh --deps` | nainstaluje balíčky pro sestavení | balíčky, `sudo` |
 | `bash setup.sh --renderer-build` | sestaví a nainstaluje renderer `omarchy-glance` | `~/.local/bin`, bez aktivace |
 | `bash setup.sh --renderer-enable` | aktivuje renderer po instalaci T1Bridge | uživatelské služby, restart Touch Baru |
 | `bash setup.sh --build-app` | sestaví editor `tbar` | ne |

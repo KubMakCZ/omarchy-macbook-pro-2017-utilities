@@ -79,6 +79,29 @@ exit 0
         return result
 
     run("--help")
+    sudo = tools / "sudo"
+    sudo.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >> "$HOME/sudo.log"\n')
+    sudo.chmod(0o755)
+    run("--deps")
+    run("--no-suspend")
+    run("--suspend-restore")
+    sudo_log = (home / "sudo.log").read_text().splitlines()
+    assert sudo_log[0].startswith("pacman -S --needed ") and "-Sy" not in sudo_log[0]
+    assert sudo_log[1].endswith("install-no-suspend.sh")
+    assert sudo_log[2].endswith("install-no-suspend.sh --remove")
+    sudo.unlink()
+    import struct
+    events = root / "events"
+    event = struct.Struct("llHHi")
+    stream = [(0, 0, 49, 1), (0, 80000, 49, 0), (0, 90000, 49, 1), (0, 150000, 49, 0),
+              (1, 0, 46, 1), (1, 400000, 46, 0), (2, 0, 30, 1), (2, 90000, 30, 0)]
+    events.write_bytes(b"".join(event.pack(s, us, 1, code, value) for s, us, code, value in stream))
+    result = subprocess.run(["python3", str(project / "key-chatter-check.py"), "--device", str(events),
+                             "--seconds", "5"], text=True, capture_output=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    assert "N: 1x z 2 stisků, nejkratší 10 ms" in result.stdout, result.stdout
+    assert "C: 1x z 1 stisků, nejdelší 400 ms" in result.stdout, result.stdout
+    assert " A:" not in result.stdout
     run("--check", "extra", expected=2)
     run("--install-app")
     assert (home / "makepkg.log").read_text().strip() == "-fsi"

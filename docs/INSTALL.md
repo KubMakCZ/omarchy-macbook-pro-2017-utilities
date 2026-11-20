@@ -59,6 +59,18 @@ bash setup.sh --usb-power
 Příkaz kontroluje model a nepřepisuje odlišné existující soubory služby. Před
 odpojením disky bezpečně vysuň. Fungování po uspání jsme neověřili.
 
+Uspání do RAM na tomto modelu končí vynuceným vypnutím a Omarchy ve výchozím
+stavu uspává při zavření víka. Doporučujeme ho hned vypnout (lze vrátit
+pomocí `--suspend-restore`; důsledky popisuje
+[HARDWARE.md](HARDWARE.md#uspání-a-probuzení)):
+
+```bash
+bash setup.sh --no-suspend
+```
+
+`bash setup.sh --check` kdykoli ukáže, které kroky instalace jsou hotové
+a který je další na řadě.
+
 ## 3. T1Bridge: podpis, balíčky a restart
 
 Tato část zatím **není automatizována**: přidává důvěru cizímu podpisovému
@@ -133,8 +145,14 @@ nemaž Apple EFI, keybag či jiná chráněná data při řešení potíží.
 ## 4. Editor a vlastní renderer
 
 Sestavení vyžaduje `git`, Rust/Cargo, `pkg-config`, vývojové soubory Cairo,
-qmake6, `make`, C++ kompilátor a Qt 6 včetně Qt Quick Controls. Závislosti
-nainstaluj podle aktuálního Omarchy, pokud chybí. Potom:
+qmake6, `make`, C++ kompilátor a Qt 6 včetně Qt Quick Controls. Chybějící
+balíčky doinstaluje (bez aktualizace databáze, přes `pacman -S --needed`):
+
+```bash
+bash setup.sh --deps
+```
+
+Potom:
 
 ```bash
 bash setup.sh --renderer-build

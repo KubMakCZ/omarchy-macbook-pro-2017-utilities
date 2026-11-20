@@ -58,7 +58,10 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 - [ ] Provést celý postup na skutečně čistém Omarchy na vhodném Macu až po
   výslovné domluvě, ověřených zálohách a plánu obnovy. Zaznamenat verze,
   jednotlivé výsledky a znovuspuštění; netvrdit, že je test hotový bez něj.
-- [ ] Postupně a bezpečně zjednodušit instalaci T1Bridge: momentálně je ruční.
+- [x] `setup.sh --check` vypisuje stav kroků instalace a další krok;
+  `setup.sh --deps` instaluje balíčky pro sestavení.
+- [ ] Postupně a bezpečně zjednodušit instalaci T1Bridge: momentálně je ruční
+  a je to hlavní překážka pro cizího uživatele.
   Ověřovat model, zálohu Apple EFI, původ a primární otisk podpisového klíče,
   konfiguraci repozitáře, kompatibilní jádro/headers, DKMS a initramfs/UKI.
   Nevynechávat aktualizaci řízenou Omarchy ani nespouštět samostatné
@@ -104,9 +107,14 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 
 - [ ] Ověřit kameru, Bluetooth, sluchátka, externí monitor a USB-C zařízení;
   případně Wi-Fi 5 GHz. Touch ID zatím nebylo nastaveno ani ověřeno.
-- [ ] Uspání/probuzení a USB po probuzení ověřovat pouze po domluvě a záloze:
-  upstream pro T1 uvádí nepodporované systémové suspend/resume a na tomto
-  modelu byl hlášen černý displej.
+- [ ] Uspání do RAM se na tomto stroji neprobudí (log 2026-11-11, uživatel
+  znovu 2026-11-20). Existuje `setup.sh --no-suspend`; uživatel ho ještě musí
+  spustit a potvrdit zavřením víka. Hibernaci a `s2idle` zkoušet pouze po
+  domluvě a záloze; vyřešit i vypnutí displeje při zavřeném víku.
+- [ ] Zdvojování klávesy `n`: nechat uživatele spustit
+  `setup.sh --keyboard-check`. Podle výsledku buď prodloužit prodlevu
+  opakování, nebo zvážit softwarový filtr odskoků (zachytává klávesnici,
+  proto vyžaduje bezpečný návrat při chybě).
 - [ ] Prozkoumat vzhled OpenCore bootloaderu s logy Macu a Omarchy jako
   **samostatný budoucí úkol**. Žádné změny bootloaderu či EFI bez výslovného
   souhlasu, ověřeného plánu návratu a záloh.

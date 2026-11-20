@@ -56,7 +56,9 @@ bash diagnose.sh
 Stará služba `omarchy-mbp-touchbar.service` je pouze pro dřívější firmwareový
 ovladač a **nesmí soupeřit s T1Bridge**. U
 [T1Bridge](https://github.com/standardagents/t1bridge) je na tomto modelu
-hlášené nefunkční uspání/probuzení; nepřepínej ovladače bez zálohy a plánu
+nefunkční uspání/probuzení: **nezavírej víko se spuštěným systémem**, dokud
+uspání nevypneš příkazem `bash setup.sh --no-suspend`
+(viz [docs/HARDWARE.md](docs/HARDWARE.md#uspání-a-probuzení)); nepřepínej ovladače bez zálohy a plánu
 návratu. Neprováděj ruční reset T1 ani neinstaluj dva konkurenční ovladače
 naslepo.
 

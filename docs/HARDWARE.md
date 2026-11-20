@@ -20,7 +20,8 @@ zkontroluj i aktuální
 | iBridge `05ac:8600`, kamera | detekováno | | skutečná funkce kamery |
 | Bluetooth, externí monitor, USB-C zařízení | | | vše |
 | Touch ID | experimentální podpora v T1Bridge | nenastaveno | vše |
-| Uspání a probuzení | | známý problém upstreamu | nezkoušeno |
+| Uspání a probuzení | | **nefunguje**, počítač se neprobudí | hibernace, `s2idle` |
+| Klávesa `n` | `applespi` | zdvojuje se, příčina neurčena | |
 
 ## Wi-Fi
 
@@ -115,10 +116,63 @@ souborový systém až po odpojení oddílu a před opravou zazálohuj důležit
 
 ## Uspání a probuzení
 
-Upstream T1Bridge uvádí systémové suspend/resume pro T1 jako nepodporované
-a na tomto modelu byl hlášen černý displej po probuzení. Na testovaném stroji
-se uspání záměrně nezkoušelo. Zkoušej ho jen s uloženou prací, zálohou
-a připraveným způsobem obnovy.
+**Uspání do RAM na testovaném stroji nefunguje.** Upstream T1Bridge uvádí
+systémové suspend/resume pro T1 jako nepodporované. Systémový log z 2026-11-11
+to potvrzuje: po zavření víka následuje `PM: suspend entry (deep)` a žádný
+záznam o probuzení; počítač bylo nutné vypnout podržením tlačítka napájení.
+Uživatel tentýž stav hlásil znovu 2026-11-20.
+
+Ve výchozím nastavení Omarchy zavření víka počítač uspí. Vynucenému vypnutí
+(a možné ztrátě dat) předejde vypnutí uspání do RAM:
+
+```bash
+bash setup.sh --no-suspend
+```
+
+Příkaz přidá `/etc/systemd/logind.conf.d/60-omarchy-mbp-no-suspend.conf`
+(zavření víka a klávesa uspání se ignorují) a zamaskuje `suspend.target`,
+`suspend-then-hibernate.target` a `hybrid-sleep.target`, takže počítač neuspí
+ani nabídka nebo nečinnost. Hibernace a vypnutí zůstávají. Existující odlišnou
+konfiguraci nepřepíše. Návrat:
+
+```bash
+bash setup.sh --suspend-restore
+```
+
+Důsledky: zavřený notebook dál běží a vybíjí baterii a displej může pod víkem
+zůstat zapnutý, proto před zavřením zamkni obrazovku nebo počítač vypni.
+Skript prošel testy, ale **na skutečném stroji zatím nebyl potvrzen**; po
+instalaci ověř zavřením víka s uloženou prací.
+
+Neověřené možnosti k budoucímu vyzkoušení: hibernace (Omarchy ji umí nastavit
+příkazem `omarchy hibernation`; při probuzení se hardware inicializuje jako
+při startu) a mělčí režim `s2idle`. Zkoušej je jen s uloženou prací a zálohou.
+
+## Zdvojená písmena na klávesnici
+
+Na testovaném stroji se při psaní zdvojuje hlavně `n`. Ovladač `applespi`
+v logu žádné chyby nehlásí. Možné příčiny jsou dvě a liší se řešením:
+
+- **Odskok spínače**: známá vada klávesnic MacBooků 2016–2019; klávesa při
+  jednom stisku sepne dvakrát. Pomůže vyčištění nebo softwarový filtr.
+- **Pomalé uvolnění klávesy** v kombinaci s krátkou prodlevou opakování
+  (zde 250 ms): pomůže delší prodleva.
+
+Rozliší to měření, které vypíše jen souhrn podezřelých kláves a napsaný text
+neukládá:
+
+```bash
+bash setup.sh --keyboard-check
+```
+
+Prodlevu opakování lze dočasně (do příštího načtení konfigurace) prodloužit
+a vyzkoušet bez instalace čehokoli:
+
+```bash
+hyprctl keyword input:repeat_delay 600
+```
+
+Příčina zatím **není určena**; softwarový filtr odskoků v projektu není.
 
 ## Po aktualizaci jádra
 
