@@ -145,7 +145,8 @@ vedle pole otevře výběr asi šedesáti běžných ikon, jiný znak zkopíruj
 z přehledu na [nerdfonts.com/cheat-sheet](https://www.nerdfonts.com/cheat-sheet).
 U „Vlastní barvy“ jsou pod nabídkou barevné čtverečky pro rychlou volbu.
 Obrázky PNG, různé barvy jednotlivých tlačítek a animace renderer neumí.
-Vlastní barvu a Esc s ikonou uživatel potvrdil na panelu MacBookPro14,2 dne
+Vlastní barvu, Esc s ikonou a automatickou změnu barev po přepnutí skinu
+uživatel potvrdil na panelu MacBookPro14,2 dne
 2026-11-21 (`tbar 0.1.0-10`); ikony tlačítek, písmo a ztlumení prošly jen
 testy a náhledem. Grafy používají
 výchozí barvy tématu btop, které renderer průběžně sleduje. Automatická změna

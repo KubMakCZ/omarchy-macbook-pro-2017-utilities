@@ -132,8 +132,8 @@ novou připnutou revizi v `install-glance.sh`):
   uživatel na panelu vyzkoušel `magenta` a `tinted`; `tinted` pak nahradil
   pevnou fialovou a později se sám vrátil k `tinted` s tématem Everforest.
   Hook `tbar-theme-sync` při změně souboru tématu barvy přepsal v izolované
-  kopii konfigurace (2026-11-21); skutečné přepnutí skinu se změnou barev na
-  panelu uživatel ještě nepotvrdil. Catppuccin
+  kopii konfigurace (2026-11-21) a uživatel tentýž den potvrdil, že se barvy
+  na panelu po přepnutí skinu změní samy. Catppuccin
   v Omarchy nemá fialovou (`accent` je modrá, `magenta` růžová).
 - [x] Vlastní barva `#rrggbb`, vlastní text nebo ikona Esc, ikony (glyfy
   Nerd Fontu) na tlačítkách a přepínačích scén, písmo lišty a ztlumení po
