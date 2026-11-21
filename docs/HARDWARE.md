@@ -147,25 +147,27 @@ na stroji ověřeno**. Návrat:
 bash setup.sh --suspend-restore
 ```
 
-Důsledky: zavřený notebook dál běží a vybíjí baterii. Omarchy při zavření
-víka samo zamkne obrazovku, ale displej nezhasne. Zhasnutí displeje a
-podsvícení klávesnice přidají dva řádky v `~/.config/hypr/bindings.lua`
-(nasazeno 2026-11-21, konfigurace se načetla bez chyb, **zavřením víka zatím
-nepotvrzeno**; Touch Bar zůstává svítit):
+Důsledky: zavřený notebook dál běží a vybíjí baterii.
+
+Omarchy 4.5.0 při zavření víka na tomto stroji **nezamkne ani nezhasne
+displej**: Touch Bar se přes `appletbdrm` hlásí jako připojený displej
+`card0-USB-1`, `omarchy-hw-external-monitors` ho proto má za externí monitor
+a Omarchy předpokládá režim v doku. Zamknutí a zhasnutí displeje i podsvícení
+klávesnice přidá vazba v `~/.config/hypr/bindings.lua`, která externí monitory
+počítá podle Hyprlandu (ten Touch Bar jako monitor nevede):
 
 ```lua
 o.bind("switch:on:Lid Switch", nil,
-  "omarchy-hw-external-monitors || { omarchy-brightness-display off; omarchy-brightness-keyboard --no-osd off; }",
+  [==[[ "$(hyprctl monitors all -j | jq '[.[] | select(.name | test("^(eDP|LVDS|DSI)-") | not)] | length')" = 0 ] && { omarchy-system-lock; sleep 1; omarchy-brightness-display off; omarchy-brightness-keyboard --no-osd off; }]==],
   { locked = true })
 o.bind("switch:off:Lid Switch", nil,
   "omarchy-brightness-display on; omarchy-brightness-keyboard --no-osd restore",
   { locked = true })
 ```
 
-Na testovaném stroji je skript nainstalován od 2026-11-21 (systemd 262):
-logind poté hlásí `CanSuspend=no`, `CanHibernate=yes` a zavření víka
-`ignore`. **Samotné zavření víka uživatel zatím nepotvrdil**; po instalaci ho
-ověř s uloženou prací.
+Nasazeno 2026-11-21 (Hyprland 0.56.2): konfigurace se načetla bez chyb a
+samotné zhasnutí a rozsvícení displeje příkazem bylo ověřeno; **zavřením víka
+zatím nepotvrzeno**. Touch Bar zůstává svítit.
 
 **Hibernace se neobnovila** (zkouška 2026-11-21, jádro `7.2.15-1-omarchy`,
 systemd 262): `systemctl hibernate` obraz uložil a počítač se vypnul
