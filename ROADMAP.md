@@ -118,9 +118,11 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 - [ ] Uspání do RAM se na tomto stroji neprobudí (log 2026-11-11, uživatel
   znovu 2026-11-20; tehdy ho vyžádal UPower při vybité baterii). Existuje
   `setup.sh --no-suspend`, od 2026-11-21 pokrývá i vybitou baterii; uživatel
-  ho ještě musí spustit a potvrdit zavřením víka. Hibernace je v systému
-  připravená (`resume=` na příkazové řádce jádra), další krok je vyzkoušet ji
-  a případně ji nastavit na zavření víka. Hibernaci a `s2idle` zkoušet pouze po
+  ho spustil 2026-11-21. Hibernace se tentýž den při zkoušce neobnovila
+  (první start se zasekl), na víko proto nastavena není; víko teď zamyká a
+  zhasíná displej přes vazbu v Hyprlandu, což uživatel ještě musí potvrdit.
+  Zbývá: zjistit příčinu neobnovení hibernace, rozhodnout chování UPower při
+  vybité baterii (hibernace, nebo vypnutí) a případně zkusit `s2idle`. Hibernaci a `s2idle` zkoušet pouze po
   domluvě a záloze; vyřešit i vypnutí displeje při zavřeném víku.
 - [ ] Zdvojování klávesy `n`: nechat uživatele spustit
   `setup.sh --keyboard-check`. Podle výsledku buď prodloužit prodlevu

@@ -20,7 +20,7 @@ zkontroluj i aktuální
 | iBridge `05ac:8600`, kamera | detekováno | | skutečná funkce kamery |
 | Bluetooth, externí monitor, USB-C zařízení | | | vše |
 | Touch ID | experimentální podpora v T1Bridge | nenastaveno | vše |
-| Uspání a probuzení | | **nefunguje**, počítač se neprobudí | hibernace, `s2idle` |
+| Uspání a probuzení | | **nefunguje**, počítač se neprobudí; hibernace se neobnoví | `s2idle` |
 | Klávesa `n` | `applespi` | zdvojuje se, příčina neurčena | |
 
 ## Wi-Fi
@@ -147,16 +147,36 @@ na stroji ověřeno**. Návrat:
 bash setup.sh --suspend-restore
 ```
 
-Důsledky: zavřený notebook dál běží a vybíjí baterii a displej může pod víkem
-zůstat zapnutý, proto před zavřením zamkni obrazovku nebo počítač vypni.
+Důsledky: zavřený notebook dál běží a vybíjí baterii. Omarchy při zavření
+víka samo zamkne obrazovku, ale displej nezhasne. Zhasnutí displeje a
+podsvícení klávesnice přidají dva řádky v `~/.config/hypr/bindings.lua`
+(nasazeno 2026-11-21, konfigurace se načetla bez chyb, **zavřením víka zatím
+nepotvrzeno**; Touch Bar zůstává svítit):
+
+```lua
+o.bind("switch:on:Lid Switch", nil,
+  "omarchy-hw-external-monitors || { omarchy-brightness-display off; omarchy-brightness-keyboard --no-osd off; }",
+  { locked = true })
+o.bind("switch:off:Lid Switch", nil,
+  "omarchy-brightness-display on; omarchy-brightness-keyboard --no-osd restore",
+  { locked = true })
+```
+
 Na testovaném stroji je skript nainstalován od 2026-11-21 (systemd 262):
 logind poté hlásí `CanSuspend=no`, `CanHibernate=yes` a zavření víka
 `ignore`. **Samotné zavření víka uživatel zatím nepotvrdil**; po instalaci ho
 ověř s uloženou prací.
 
-Neověřené možnosti k budoucímu vyzkoušení: hibernace (Omarchy ji umí nastavit
-příkazem `omarchy hibernation`; při probuzení se hardware inicializuje jako
-při startu) a mělčí režim `s2idle`. Zkoušej je jen s uloženou prací a zálohou.
+**Hibernace se neobnovila** (zkouška 2026-11-21, jádro `7.2.15-1-omarchy`,
+systemd 262): `systemctl hibernate` obraz uložil a počítač se vypnul
+(`PM: hibernation: hibernation entry`), ale první zapnutí se zaseklo a až
+vynucený restart naběhl jako čistý start bez obnovení relace. Příčina není
+určena; jde o jediný pokus. Na zavření víka proto hibernace nastavena není.
+Pozor: s ochranou výše UPower při téměř vybité baterii nejspíš zvolí právě
+hibernaci, takže následný start může potřebovat jeden restart navíc.
+
+Neověřená možnost k budoucímu vyzkoušení je mělčí režim `s2idle`. Zkoušej ho
+jen s uloženou prací a zálohou.
 
 ## Zdvojená písmena na klávesnici
 
