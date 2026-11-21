@@ -258,7 +258,8 @@ mimo správu balíčků. Aktualizace může funkce rozbít. Návod na
 Ovládací tlačítka (hlasitost, jas, podsvícení klávesnice, média) a tlačítko
 další scény uživatel potvrdil na panelu MacBookPro14,2 dne 2026-11-21
 (`tbar 0.1.0-8`). Automatika podle aplikace na témže stroji přepnula scénu
-při přechodu do Firefoxu a zpět (ověřeno stavem `tbar list`), pohledem na
-panel ji uživatel ještě nepotvrdil. Tlačítko mikrofonu prošlo jen testy. Posuvníky, GIFy, libovolný počet prvků a vlastní grafické ikony
+při přechodu do Firefoxu a zpět a uživatel potvrdil tlačítka scény se
+zkratkami přes `wtype`. Chování po restartu ověřeno není; tlačítko mikrofonu
+prošlo jen testy. Posuvníky, GIFy, libovolný počet prvků a vlastní grafické ikony
 nejsou implementovány.
 Budoucí úpravy OpenCore jsou samostatný úkol; tento projekt bootloader nemění.

@@ -90,8 +90,8 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   `tbar-watch.service`), implementováno 2026-11-21. Tentýž den zapnuto na
   testovaném stroji: po přepnutí do Firefoxu se použila scéna `Web` a po
   návratu předchozí scéna (ověřeno stavem `tbar list`, Hyprland 0.56.2);
-  **uživatel to na panelu ještě nepotvrdil**. Zbývá ověřit chování po restartu
-  a při zamčené obrazovce.
+  uživatel potvrdil i tlačítka scény `Web` (zkratky přes `wtype`) na panelu.
+  Zbývá ověřit chování po restartu a při zamčené obrazovce.
 - [x] Ovládání hlasitosti, jasu displeje, podsvícení klávesnice, médií a
   mikrofonu jako hotové skupiny tlačítek (`control`), 2026-11-21; hlasitost,
   jas, podsvícení klávesnice a média uživatel potvrdil na panelu, mikrofon
