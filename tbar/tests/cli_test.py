@@ -104,6 +104,29 @@ with tempfile.TemporaryDirectory() as directory:
     assert not list(renderer.parent.glob("touchbar.json.backup-*"))
     run("restore", "--json")
     assert run("list")["applied"] == ""
+    # A theme change that cannot recolour the bar says so in a notification.
+    fake_bin = root / "fake-bin"
+    fake_bin.mkdir()
+    notify = fake_bin / "notify-send"
+    notify.write_text('#!/bin/sh\nprintf "%s\\n" "$*" > "$HOME/notify.log"\n')
+    notify.chmod(0o755)
+    notify_env = dict(env, PATH=str(fake_bin) + os.pathsep + env["PATH"])
+    theme = root / "state" / "omarchy" / "current" / "theme"
+    theme.mkdir(parents=True)
+    (theme / "colors.toml").write_text('accent = "#123456"\nlighter_background = "#202020"\nforeground = "#eeeeee"\n')
+    run("apply", "Demo", "--json")
+    assert subprocess.run([binary, "sync-theme"], env=notify_env, timeout=10).returncode == 0
+    assert not (root / "notify.log").exists()
+    with open(renderer, "a") as changed:
+        changed.write(" ")
+    failed = subprocess.run([binary, "sync-theme"], env=notify_env, capture_output=True, text=True, timeout=10)
+    assert failed.returncode == 1 and failed.stderr.strip()
+    for _ in range(100):
+        if (root / "notify.log").exists():
+            break
+        time.sleep(0.05)
+    assert "Touch Bar" in (root / "notify.log").read_text()
+    renderer.unlink()
     for bad in [
         {"name": "x", "buttons": [{"label": "x", "command": ""}]},
         {"name": "x", "buttons": [{"label": "x", "kind": "widget", "command": "cpu", "width": 15.5}]},

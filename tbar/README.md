@@ -143,7 +143,9 @@ z aktuálního tématu Omarchy, i vlastního:
 | `accent`, `magenta`, `blue`, `cyan`, `green`, `yellow`, `orange`, `red` | `darker_background` | zvolená barva tématu | `darker_background` |
 
 Po použití scény hook při změně tématu bezpečně
-aktualizuje barvy; nezasáhne do konfigurace změněné mimo editor.
+aktualizuje barvy; nezasáhne do konfigurace změněné mimo editor. Když barvy
+přepsat nemůže, pošle oznámení s důvodem (vyžaduje `notify-send`); nejčastěji
+pomůže scénu znovu použít tlačítkem „Použít rozložení“.
 
 „Vlastní barva“ nastaví tlačítkům pevnou barvu `#rrggbb` (například fialová
 `#cba6f7`) na černé liště; text je černý nebo bílý podle jasu barvy. Pevná

@@ -68,6 +68,8 @@ int main(int argc, char **argv) {
     if (arguments.size() == 2 && arguments[1] == "sync-theme") {
         if (backend.syncTheme()) return 0;
         QTextStream(stderr) << backend.message() << '\n';
+        // The theme hook runs unattended, so say why the colours stayed as they were.
+        QProcess::startDetached("notify-send", {"-a", "tbar", "Touch Bar", backend.message()});
         return 1;
     }
     if (arguments.size() == 5 && arguments[1] == "status") {

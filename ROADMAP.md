@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-12` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
+- Zdroj `tbar` v repozitáři je `0.1.0-13` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
   2026-11-21.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
