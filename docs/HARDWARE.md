@@ -143,8 +143,9 @@ protože UPower při téměř vybité baterii sám vyžádal `suspend-then-hiber
 `/etc/UPower/UPower.conf.d/60-omarchy-mbp-no-suspend.conf`, proto UPower
 nastaví `CriticalPowerAction=PowerOff`: při téměř vybité baterii se počítač
 čistě vypne. Bez něj UPower 1.91.5 dál hlásil kritickou akci `Sleep`; po
-instalaci 2026-11-21 hlásí `PowerOff`. **Skutečné vybití baterie zatím nebylo
-na stroji vyzkoušeno.**
+instalaci 2026-11-21 hlásí `PowerOff`. Skutečné vybití 2026-11-21 ve 21:46 to
+potvrdilo: `upowerd` požádal o vypnutí, systém se čistě vypnul a následující
+start proběhl bez chyb souborového systému.
 Návrat:
 
 ```bash
