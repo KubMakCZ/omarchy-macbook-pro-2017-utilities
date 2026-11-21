@@ -180,6 +180,10 @@ novou připnutou revizi v `install-glance.sh`):
 - [x] Soukromá kopie má od 2026-11-21 další styly spořiče (`scanner`,
   `waves`, `stars`, `equalizer`, `plasma`, `pong`), ověřené náhledem;
   `tbar 0.1.0-14` je nabízí a přijme jakýkoli název stylu.
+- [x] Soukromá kopie umí spořič spustit na povel (soubor
+  `$XDG_RUNTIME_DIR/omarchy-glance-saver` s názvem stylu, trvá do dotyku);
+  na testovaném stroji ho používá scéna `Sporice` s tlačítkem pro každý styl.
+  Renderer povel převzal, výsledek na panelu uživatel ještě nepotvrdil.
 - [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Animované
   pozadí pod tlačítky a různé barvy tlačítek zatím nejsou ani v soukromé
   kopii.
