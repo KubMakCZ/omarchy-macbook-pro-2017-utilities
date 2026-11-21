@@ -224,6 +224,40 @@ ApplicationWindow {
                 Item { visible: saverStyle.currentIndex !== 1 && saverStyle.currentIndex !== 2; Layout.fillWidth: true }
             }
             RowLayout {
+                Label { text: qsTr("Key corners") }
+                SpinBox { id: keyRadius; from: 0; to: 26; stepSize: 2; editable: true; value: backend.keys.radius }
+                Label { text: qsTr("Key opacity (%)") }
+                SpinBox { id: keyOpacity; from: 10; to: 100; stepSize: 5; editable: true; value: backend.keys.opacity }
+                Label { text: qsTr("Animation behind keys") }
+                ComboBox {
+                    id: keyAnimation
+                    Layout.fillWidth: true
+                    readonly property var styles: ["", "matrix", "scanner", "waves", "stars", "equalizer", "plasma", "pong"]
+                    model: [qsTr("None"), qsTr("Running characters"), qsTr("Scanner"), qsTr("Waves"), qsTr("Stars"),
+                            qsTr("Equalizer"), qsTr("Plasma"), qsTr("Pong")]
+                    currentIndex: Math.max(0, styles.indexOf(backend.keys.animation))
+                }
+                Button {
+                    text: qsTr("Save")
+                    objectName: "saveKeys"
+                    onClicked: backend.setKeys(keyRadius.value, keyOpacity.value,
+                                               keyAnimation.styles[keyAnimation.currentIndex], false)
+                }
+                Button {
+                    text: qsTr("Use for all layouts")
+                    onClicked: backend.setKeys(keyRadius.value, keyOpacity.value,
+                                               keyAnimation.styles[keyAnimation.currentIndex], true)
+                }
+                Connections {
+                    target: backend
+                    function onChanged() {
+                        keyRadius.value = backend.keys.radius
+                        keyOpacity.value = backend.keys.opacity
+                        keyAnimation.currentIndex = Math.max(0, keyAnimation.styles.indexOf(backend.keys.animation))
+                    }
+                }
+            }
+            RowLayout {
                 Label { text: qsTr("Bar background") }
                 TextField {
                     id: backgroundImage
@@ -255,7 +289,7 @@ ApplicationWindow {
                 }
             }
             Label {
-                text: qsTr("Screensaver and background need a renderer that supports them; the stock omarchy-glance ignores them.")
+                text: qsTr("Rounded keys, screensaver and backgrounds need a renderer that supports them; the stock omarchy-glance ignores them.")
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
                 color: "#a0a0a0"

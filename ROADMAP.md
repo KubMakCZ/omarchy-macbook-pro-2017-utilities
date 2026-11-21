@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-14` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
+- Zdroj `tbar` v repozitáři je `0.1.0-15` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
   2026-11-21.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
@@ -184,9 +184,12 @@ novou připnutou revizi v `install-glance.sh`):
   `$XDG_RUNTIME_DIR/omarchy-glance-saver` s názvem stylu, trvá do dotyku);
   na testovaném stroji ho používá scéna `Sporice` s tlačítkem pro každý styl.
   Uživatel potvrdil, že tlačítka na panelu spouštějí jednotlivé animace.
-- [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Animované
-  pozadí pod tlačítky a různé barvy tlačítek zatím nejsou ani v soukromé
-  kopii.
+- [x] Soukromá kopie má od 2026-11-21 zaoblená tlačítka (`keyRadius`), krytí
+  tlačítek (`keyOpacity`) a animaci pod tlačítky (`backgroundStyle`); ověřeno
+  náhledem a testy rendereru, `tbar 0.1.0-15` je umí zapsat. Na panelu
+  nepotvrzeno, zátěž animace pod tlačítky nezměřena.
+- [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Různé barvy
+  jednotlivých tlačítek zatím nejsou ani v soukromé kopii.
 - [x] Technická proveditelnost (čteno ze zdroje, potvrzeno zkouškou výše): renderer kreslí
   přes Cairo se zapnutou podporou PNG a hlavní smyčka čeká na nejbližší
   termín, takže obrázky i časovač animace do něj zapadají bez přestavby.

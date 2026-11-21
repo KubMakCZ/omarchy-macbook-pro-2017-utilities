@@ -413,6 +413,16 @@ void BackendTests::themedLayoutFollowsChangesSafely() {
     QVERIFY(model.exportProfile("Second").contains("screensaverSeconds"));
     QVERIFY(model.setSaver(0, "matrix", "", "", "", true));
     QVERIFY(!model.rendererConfig().contains("screensaverSeconds"));
+    QVERIFY(!model.setKeys(40, 100, "", false));
+    QVERIFY(!model.setKeys(10, 5, "", false));
+    QVERIFY(model.setKeys(14, 75, "waves", true));
+    auto rounded = model.rendererConfig();
+    QCOMPARE(rounded.value("keyRadius").toInt(), 14);
+    QCOMPARE(rounded.value("keyOpacity").toDouble(), 0.75);
+    QCOMPARE(rounded.value("backgroundStyle").toString(), QString("waves"));
+    QCOMPARE(rounded.value("screensaverColor").toString(), QString("#f5c2e7"));
+    QVERIFY(model.setKeys(0, 100, "", true));
+    QVERIFY(!model.rendererConfig().contains("keyRadius") && !model.rendererConfig().contains("backgroundStyle"));
     QVERIFY(model.setThemeStyle("", false));
     QVERIFY(model.addButton("Keys", "true"));
     const int last = model.buttons().size() - 1;

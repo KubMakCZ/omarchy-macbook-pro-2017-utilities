@@ -63,7 +63,9 @@ tbar was first used, and refuses if that layout was changed outside tbar.
   (idle seconds, 0-3600), `screensaverStyle` (a lower-case style name the renderer knows, e.g.
   `matrix`, `text`, `image`),
   `screensaverText` (1-32 characters), `screensaverImage` and
-  `backgroundImage` (absolute paths to `.png` files). Ask the user whether
+  `backgroundImage` (absolute paths to `.png` files), `backgroundStyle` (an
+  animation behind the keys, same names as the screensaver styles),
+  `keyRadius` (0-26 px) and `keyOpacity` (10-100 percent). Ask the user whether
   their renderer supports them before relying on these.
 - `apps`: optional, at most 8 Hyprland window classes (`A-Za-z0-9._+-`,
   case-insensitive, see `hyprctl activewindow`). While the user's

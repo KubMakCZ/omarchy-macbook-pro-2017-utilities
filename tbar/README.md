@@ -120,6 +120,11 @@ stylu malými písmeny, neznámý styl renderer vykreslí jako `matrix`),
 `screensaverImage` a `backgroundImage` (absolutní cesty k souborům `.png`).
 Barva spořiče se bere z barev scény a mění se s tématem.
 
+Řádek „Zaoblení tlačítek“ nastavuje `keyRadius` (0–26 bodů, 0 = hranatá),
+`keyOpacity` (krytí tlačítek 10–100 %) a `backgroundStyle` (animace pod
+tlačítky, stejné názvy jako styly spořiče). Animace pod tlačítky běží pořád,
+kromě ztlumené lišty a spořiče, takže zatěžuje baterii víc než spořič.
+
 **Původní renderer omarchy-glance tyto volby ignoruje.** Fungují jen
 s rendererem, který je umí; takový zatím není veřejně dostupný, protože
 upstream nemá licenci dovolující šířit upravenou verzi (viz

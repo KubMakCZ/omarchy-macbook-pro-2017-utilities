@@ -24,6 +24,7 @@ class Backend : public QObject {
     Q_PROPERTY(QString apps READ apps NOTIFY changed)
     Q_PROPERTY(QVariantMap look READ look NOTIFY changed)
     Q_PROPERTY(QVariantMap saver READ saver NOTIFY changed)
+    Q_PROPERTY(QVariantMap keys READ keys NOTIFY changed)
     Q_PROPERTY(QString applied READ appliedProfile NOTIFY appliedChanged)
 
 public:
@@ -42,6 +43,7 @@ public:
     QString apps() const;
     QVariantMap look() const;
     QVariantMap saver() const;
+    QVariantMap keys() const;
     QString appliedProfile() const;
     QString manualProfile() const;
     QString nextProfile() const;
@@ -61,6 +63,7 @@ public:
     Q_INVOKABLE bool setApps(const QString &list);
     Q_INVOKABLE bool setLook(const QString &escLabel, const QString &escIcon, const QString &font, int idleDim);
     Q_INVOKABLE bool setItemIcon(int index, const QString &icon);
+    Q_INVOKABLE bool setKeys(int radius, int opacity, const QString &animation, bool everywhere);
     Q_INVOKABLE bool setSaver(int seconds, const QString &style, const QString &text, const QString &image,
                               const QString &background, bool everywhere);
     Q_INVOKABLE bool editItem(int index, const QString &section, int width,

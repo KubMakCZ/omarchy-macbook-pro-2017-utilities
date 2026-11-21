@@ -370,7 +370,7 @@ QJsonObject Backend::profile(const QString &name) const {
 QString Backend::validateProfile(const QJsonObject &profile) {
     const QStringList profileKeys{"name", "theme", "apps", "buttons", "escLabel", "escIcon", "font", "idleDim",
                                   "screensaver", "screensaverStyle", "screensaverText", "screensaverImage",
-                                  "backgroundImage"};
+                                  "backgroundImage", "backgroundStyle", "keyRadius", "keyOpacity"};
     for (auto it = profile.begin(); it != profile.end(); ++it)
         if (!profileKeys.contains(it.key())) return "Unknown profile field: " + it.key();
     if (!profile.value("name").isString() || profile.value("name").toString().trimmed().isEmpty()
@@ -395,6 +395,17 @@ QString Backend::validateProfile(const QJsonObject &profile) {
         return "screensaverStyle must be a lower-case style name such as matrix, text or image";
     if (profile.contains("screensaverText") && !validText(profile.value("screensaverText"), 32))
         return "screensaverText must be a single line of 1-32 characters";
+    if (profile.contains("backgroundStyle")
+        && !QRegularExpression("^[a-z][a-z0-9-]{0,23}$").match(profile.value("backgroundStyle").toString()).hasMatch())
+        return "backgroundStyle must be a lower-case animation name such as waves or stars";
+    const QList<QPair<QString, QPair<int, int>>> ranges{{"keyRadius", {0, 26}}, {"keyOpacity", {10, 100}}};
+    for (const auto &range : ranges) {
+        const QJsonValue number = profile.value(range.first);
+        if (profile.contains(range.first) && (!number.isDouble() || number.toDouble() != number.toInt()
+            || number.toInt() < range.second.first || number.toInt() > range.second.second))
+            return QString("%1 must be an integer from %2 to %3").arg(range.first)
+                .arg(range.second.first).arg(range.second.second);
+    }
     for (const QString key : {"screensaverImage", "backgroundImage"})
         if (profile.contains(key) && !validPng(profile.value(key)))
             return key + " must be an absolute path to a .png file";
@@ -697,6 +708,32 @@ bool Backend::setSaver(int seconds, const QString &style, const QString &text, c
     return save(updated, m_selected, everywhere);
 }
 
+QVariantMap Backend::keys() const {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
+    const QJsonObject scene = m_profiles[m_selected].toObject();
+    return {{"radius", scene.value("keyRadius").toInt()}, {"opacity", scene.value("keyOpacity").toInt(100)},
+            {"animation", scene.value("backgroundStyle").toString()}};
+}
+
+bool Backend::setKeys(int radius, int opacity, const QString &animation, bool everywhere) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray updated = m_profiles;
+    for (int index = 0; index < updated.size(); ++index) {
+        if (!everywhere && index != m_selected) continue;
+        QJsonObject scene = updated[index].toObject();
+        if (radius > 0) scene.insert("keyRadius", radius);
+        else scene.remove("keyRadius");
+        if (opacity < 100) scene.insert("keyOpacity", opacity);
+        else scene.remove("keyOpacity");
+        if (animation.isEmpty()) scene.remove("backgroundStyle");
+        else scene.insert("backgroundStyle", animation);
+        if (!validateProfile(scene).isEmpty())
+            return fail(tr("Check the corner radius (0-26), the opacity (10-100 %) and the animation."));
+        updated[index] = scene;
+    }
+    return save(updated, m_selected, everywhere);
+}
+
 QVariantMap Backend::look() const {
     if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
     const QJsonObject scene = m_profiles[m_selected].toObject();
@@ -926,11 +963,15 @@ QJsonObject Backend::rendererConfig() const {
         if (scene.contains("screensaverImage")) result.insert("screensaverImage", scene.value("screensaverImage"));
     }
     if (scene.contains("backgroundImage")) result.insert("backgroundImage", scene.value("backgroundImage"));
+    if (scene.contains("backgroundStyle")) result.insert("backgroundStyle", scene.value("backgroundStyle"));
+    if (scene.contains("keyRadius")) result.insert("keyRadius", scene.value("keyRadius"));
+    if (scene.contains("keyOpacity")) result.insert("keyOpacity", scene.value("keyOpacity").toInt() / 100.0);
     if (!themeStyle().isEmpty()) {
         result.insert("tbar", QJsonObject{{"theme", themeStyle()}});
         result.insert("colors", themeColors(themeStyle()));
         const QString saver = saverColor(themeStyle(), result.value("colors").toObject());
-        if (result.contains("screensaverSeconds") && !saver.isEmpty()) result.insert("screensaverColor", saver);
+        if ((result.contains("screensaverSeconds") || result.contains("backgroundStyle")) && !saver.isEmpty())
+            result.insert("screensaverColor", saver);
     }
     return result;
 }
@@ -1070,7 +1111,8 @@ bool Backend::syncTheme() {
     if (colors.isEmpty()) return fail(tr("Could not read the Omarchy theme colors."));
     if (config.value("colors").toObject() == colors) return true;
     config.insert("colors", colors);
-    if (config.contains("screensaverSeconds") && !saverColor(style, colors).isEmpty())
+    if ((config.contains("screensaverSeconds") || config.contains("backgroundStyle"))
+        && !saverColor(style, colors).isEmpty())
         config.insert("screensaverColor", saverColor(style, colors));
     QString writeError;
     if (!writeJson(path, config, &writeError))
