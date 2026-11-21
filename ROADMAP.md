@@ -129,13 +129,14 @@ novou připnutou revizi v `install-glance.sh`):
   `tinted` (obarvená lišta) a tlačítka v barvě tématu (`accent`, `magenta`,
   `blue`, `cyan`, `green`, `yellow`, `orange`, `red`) a volbu „Použít pro
   všechna rozložení“. Prošly testy a náhled rendereru s tématem Catppuccin;
-  uživatel na panelu vyzkoušel `magenta` a `tinted` a ponechal si `tinted` ve
-  všech scénách. Automatická změna barev při přepnutí tématu ověřena není. Catppuccin
+  uživatel na panelu vyzkoušel `magenta` a `tinted`; `tinted` pak nahradil
+  pevnou fialovou. Automatická změna barev při přepnutí tématu ověřena není. Catppuccin
   v Omarchy nemá fialovou (`accent` je modrá, `magenta` růžová).
 - [x] Vlastní barva `#rrggbb`, vlastní text nebo ikona Esc, ikony (glyfy
   Nerd Fontu) na tlačítkách a přepínačích scén, písmo lišty a ztlumení po
   nečinnosti: `tbar 0.1.0-10` (2026-11-21). Prošly testy a náhled rendereru;
-  **na panelu nepotvrzeno**. Zbývá pohodlný výběr ikon a barvy v GUI (dnes se
+  na testovaném stroji mají všechny scény barvu `#cba6f7` a ikonu Esc a
+  renderer je načetl, **uživatel vzhled na panelu ještě nepotvrdil**. Zbývá pohodlný výběr ikon a barvy v GUI (dnes se
   znak i kód barvy zadávají ručně).
 - [ ] Barva jednotlivých tlačítek: renderer má barvy jen pro celou lištu.
   Vyžaduje zásah do rendereru.
