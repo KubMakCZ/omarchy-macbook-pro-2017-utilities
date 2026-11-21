@@ -183,7 +183,7 @@ novou připnutou revizi v `install-glance.sh`):
 - [x] Soukromá kopie umí spořič spustit na povel (soubor
   `$XDG_RUNTIME_DIR/omarchy-glance-saver` s názvem stylu, trvá do dotyku);
   na testovaném stroji ho používá scéna `Sporice` s tlačítkem pro každý styl.
-  Renderer povel převzal, výsledek na panelu uživatel ještě nepotvrdil.
+  Uživatel potvrdil, že tlačítka na panelu spouštějí jednotlivé animace.
 - [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Animované
   pozadí pod tlačítky a různé barvy tlačítek zatím nejsou ani v soukromé
   kopii.
