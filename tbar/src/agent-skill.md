@@ -24,6 +24,10 @@ the authoritative single-profile JSON Schema.
 6. Apply only with the user's approval: `tbar apply NAME --json` changes the
    real Touch Bar and saves a backup of the renderer configuration.
 
+`tbar next --json` switches the Touch Bar to the following scene. It and the
+`scene` buttons work only after one `tbar apply`, and refuse when the renderer
+configuration was changed outside tbar.
+
 `tbar select NAME --json` changes the scene selected in the editor, not the
 Touch Bar. `tbar restore --json` returns to the layout that existed before
 tbar was first used, and refuses if that layout was changed outside tbar.
@@ -46,13 +50,22 @@ tbar was first used, and refuses if that layout was changed outside tbar.
 
 - `name`: 1-40 characters, no leading or trailing whitespace.
 - `theme`: omit it, or `"auto"` to colour buttons from the Omarchy theme.
+- `apps`: optional, at most 8 Hyprland window classes (`A-Za-z0-9._+-`,
+  case-insensitive, see `hyprctl activewindow`). While the user's
+  `tbar-watch.service` runs, the scene is shown when such a window is focused
+  and the last manually chosen scene returns afterwards. Do not enable the
+  service yourself without approval.
 - `buttons`: at most 12 items. Escape and the Fn layer (F1-F12) are added
   automatically; do not add them yourself.
 - `label`: required, 1-16 characters, single line.
 - `kind`: omitted or `button` (`command` is a shell command, required),
   `widget` (`command` is `cpu`, `memory`, `network`, `disk` or `battery`),
   `process` (`command` is an exact process name, 1-15 characters of
-  `A-Za-z0-9._+-`), `internet`, `temperature`, `spacer`.
+  `A-Za-z0-9._+-`), `internet`, `temperature`, `spacer`, `control`
+  (`command` is `volume`, `brightness`, `keyboard`, `media` or `mic`; one item
+  becomes a group of 1-4 keys, there are no sliders), `scene` (`command` is
+  the name of the scene to switch to), `scene-next` (no `command`). Give every
+  scene reachable by a `scene` button its own button back.
 - `section`: `left` (default), `center` or `right`. Sections are positioned
   independently and overlap when too wide; keep the total width modest.
 - `width`: integer 10-500. `style` (`dots` or `bars`) and `interval`

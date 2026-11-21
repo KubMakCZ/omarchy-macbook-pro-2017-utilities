@@ -80,10 +80,32 @@ ApplicationWindow {
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
             }
+            Label {
+                text: backend.applied === "" ? qsTr("No layout from this app is on the Touch Bar yet.")
+                                             : qsTr("On the Touch Bar now: %1").arg(backend.applied)
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
             CheckBox {
                 text: qsTr("Follow Omarchy theme for buttons")
                 checked: backend.themeAuto
                 onClicked: backend.setThemeAuto(checked)
+            }
+            RowLayout {
+                Label { text: qsTr("Show for apps") }
+                TextField {
+                    id: appsInput
+                    objectName: "appsInput"
+                    Layout.fillWidth: true
+                    text: backend.apps
+                    placeholderText: qsTr("Window classes, e.g. firefox, code")
+                    onAccepted: backend.setApps(text)
+                }
+                Button { text: qsTr("Save apps"); onClicked: backend.setApps(appsInput.text) }
+                Connections {
+                    target: backend
+                    function onChanged() { appsInput.text = backend.apps }
+                }
             }
             RowLayout {
                 Label { text: qsTr("Live preview") }
@@ -129,7 +151,13 @@ ApplicationWindow {
                         anchors.fill: parent
                         anchors.margins: 8
                         Label { text: modelData.label; font.bold: true; Layout.preferredWidth: 120; elide: Text.ElideRight }
-                        Label { text: modelData.command; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                        Label {
+                            text: modelData.kind === "scene-next" ? qsTr("Next layout")
+                                : modelData.kind === "scene" ? qsTr("Layout: %1").arg(modelData.command)
+                                : modelData.command
+                            Layout.fillWidth: true
+                            elide: Text.ElideMiddle
+                        }
                         Label {
                             text: modelData.section === "center" ? qsTr("Center")
                                 : modelData.section === "right" ? qsTr("Right") : qsTr("Left")
@@ -142,6 +170,25 @@ ApplicationWindow {
                 }
             }
             RowLayout {
+                ComboBox {
+                    id: template
+                    Layout.preferredWidth: 160
+                    textRole: "name"
+                    displayText: qsTr("Templates")
+                    model: [
+                        { name: qsTr("Keyboard shortcuts"), label: "Keys", command: "omarchy menu keybindings" },
+                        { name: qsTr("Omarchy menu"), label: "Menu", command: "omarchy menu toggle" },
+                        { name: qsTr("Change theme"), label: "Theme", command: "omarchy menu toggle appearance.theme" },
+                        { name: qsTr("AI agent"), label: "Agent", command: "omarchy agent" },
+                        { name: qsTr("Lock screen"), label: "Lock", command: "omarchy system lock" },
+                        { name: qsTr("Screenshot"), label: "Shot", command: "omarchy-capture-screenshot" },
+                        { name: qsTr("Terminal"), label: "Term", command: "omarchy-launch-terminal" }
+                    ]
+                    onActivated: function(index) {
+                        labelInput.text = model[index].label
+                        commandInput.text = model[index].command
+                    }
+                }
                 TextField {
                     id: labelInput
                     Layout.preferredWidth: 160
@@ -202,6 +249,35 @@ ApplicationWindow {
                     text: qsTr("Add spacer")
                     enabled: backend.buttons.length < 12
                     onClicked: backend.addSpacer()
+                }
+            }
+            RowLayout {
+                ComboBox {
+                    id: controlKind
+                    Layout.fillWidth: true
+                    model: [qsTr("Volume (mute, −, +)"), qsTr("Display brightness (−, +)"),
+                            qsTr("Keyboard backlight (−, +)"), qsTr("Media player"), qsTr("Microphone")]
+                }
+                Button {
+                    text: qsTr("Add control")
+                    objectName: "addControl"
+                    enabled: backend.buttons.length < 12
+                    onClicked: backend.addControl(["volume", "brightness", "keyboard", "media", "mic"][controlKind.currentIndex])
+                }
+            }
+            RowLayout {
+                TextField { id: sceneLabel; placeholderText: qsTr("Label"); maximumLength: 16; Layout.preferredWidth: 160 }
+                ComboBox {
+                    id: sceneTarget
+                    Layout.fillWidth: true
+                    model: [qsTr("Next layout")].concat(backend.profiles)
+                }
+                Button {
+                    text: qsTr("Add layout switch")
+                    enabled: backend.buttons.length < 12
+                    onClicked: if (backend.addSceneButton(sceneLabel.text,
+                                       sceneTarget.currentIndex === 0 ? "" : sceneTarget.currentText))
+                        sceneLabel.clear()
                 }
             }
             Label {

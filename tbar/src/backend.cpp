@@ -20,6 +20,10 @@
 namespace {
 const QStringList widgets{"cpu", "memory", "network", "disk", "battery"};
 const QStringList sections{"left", "center", "right"};
+const QStringList controls{"volume", "brightness", "keyboard", "media", "mic"};
+const QStringList kinds{"button", "internet", "temperature", "process", "widget", "spacer",
+                        "control", "scene", "scene-next"};
+const QRegularExpression appClass("^[A-Za-z0-9._+-]{1,64}$");
 
 QJsonObject themeColors() {
     const QString state = qEnvironmentVariable("XDG_STATE_HOME", QDir::homePath() + "/.local/state");
@@ -154,7 +158,8 @@ Backend::Backend(const QString &configHome, QObject *parent)
         const auto obj = item.toObject();
         if (!item.isObject() || obj.value("name").toString().trimmed().isEmpty()
             || !obj.value("buttons").isArray() || obj.value("buttons").toArray().size() > 12
-            || (obj.contains("theme") && obj.value("theme").toString() != "auto")) {
+            || (obj.contains("theme") && obj.value("theme").toString() != "auto")
+            || (obj.contains("apps") && !obj.value("apps").isArray())) {
             m_message = tr("Profiles are invalid. The file was not changed.");
             return;
         }
@@ -163,8 +168,9 @@ Backend::Backend(const QString &configHome, QObject *parent)
             const QString kind = obj.value("kind").toString("button");
             const QString argument = obj.value("command").toString();
             if (!button.isObject() || obj.value("label").toString().trimmed().isEmpty()
-                || !QStringList{"button", "internet", "temperature", "process", "widget", "spacer"}.contains(kind)
-                || (kind == "button" && argument.trimmed().isEmpty())
+                || !kinds.contains(kind)
+                || ((kind == "button" || kind == "scene") && argument.trimmed().isEmpty())
+                || (kind == "control" && !controls.contains(argument))
                 || (kind == "widget" && !widgets.contains(argument))
                 || (obj.contains("section") && !sections.contains(obj.value("section").toString()))
                 || (obj.contains("width") && (!obj.value("width").isDouble()
@@ -312,7 +318,7 @@ QJsonObject Backend::profile(const QString &name) const {
 }
 
 QString Backend::validateProfile(const QJsonObject &profile) {
-    const QStringList profileKeys{"name", "theme", "buttons"};
+    const QStringList profileKeys{"name", "theme", "apps", "buttons"};
     for (auto it = profile.begin(); it != profile.end(); ++it)
         if (!profileKeys.contains(it.key())) return "Unknown profile field: " + it.key();
     if (!profile.value("name").isString() || profile.value("name").toString().trimmed().isEmpty()
@@ -321,6 +327,13 @@ QString Backend::validateProfile(const QJsonObject &profile) {
         return "name must be a non-empty trimmed string of at most 40 characters";
     if (profile.contains("theme") && profile.value("theme").toString() != "auto")
         return "theme must be auto when present";
+    if (profile.contains("apps")) {
+        if (!profile.value("apps").isArray() || profile.value("apps").toArray().size() > 8)
+            return "apps must be an array of at most 8 window classes";
+        for (const auto &app : profile.value("apps").toArray())
+            if (!app.isString() || !appClass.match(app.toString()).hasMatch())
+                return "apps items must be window classes of 1-64 characters from A-Za-z0-9._+-";
+    }
     if (!profile.value("buttons").isArray() || profile.value("buttons").toArray().size() > 12)
         return "buttons must be an array of at most 12 items";
     const QStringList itemKeys{"label", "kind", "command", "section", "width", "style", "interval", "temperature"};
@@ -338,13 +351,19 @@ QString Backend::validateProfile(const QJsonObject &profile) {
             return prefix + "label must be a non-empty string of at most 16 characters";
         if (item.contains("kind") && !item.value("kind").isString()) return prefix + "kind must be a string";
         const QString kind = item.value("kind").toString("button");
-        if (!QStringList{"button", "internet", "temperature", "process", "widget", "spacer"}.contains(kind))
+        if (!kinds.contains(kind))
             return prefix + "unknown kind";
         if (item.contains("command") && !item.value("command").isString()) return prefix + "command must be a string";
         const QString command = item.value("command").toString();
         if (command.contains('\0') || command.size() > 1024 || (kind == "button" && command.trimmed().isEmpty()))
             return prefix + "button command must be non-empty and at most 1024 characters";
         if (kind == "widget" && !widgets.contains(command)) return prefix + "unknown widget";
+        if (kind == "control" && !controls.contains(command))
+            return prefix + "control must be volume, brightness, keyboard, media or mic";
+        if (kind == "scene" && (command.trimmed().isEmpty() || command != command.trimmed() || command.size() > 40))
+            return prefix + "scene command must be the name of a scene";
+        if (kind == "scene-next" && !command.isEmpty())
+            return prefix + "scene-next takes no command";
         if (kind == "process" && !QRegularExpression("^[A-Za-z0-9._+-]{1,15}$").match(command).hasMatch())
             return prefix + "invalid process name";
         if (item.contains("section") && !sections.contains(item.value("section").toString()))
@@ -525,6 +544,98 @@ bool Backend::editItem(int index, const QString &section, int width,
     return save(updated, m_selected);
 }
 
+bool Backend::appendItem(const QJsonObject &item) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray updated = m_profiles;
+    QJsonObject profile = updated[m_selected].toObject();
+    QJsonArray items = profile.value("buttons").toArray();
+    if (items.size() >= 12) return fail(tr("A profile can have at most 12 items."));
+    items.append(item);
+    profile.insert("buttons", items);
+    updated[m_selected] = profile;
+    return save(updated, m_selected);
+}
+
+bool Backend::addControl(const QString &kind) {
+    if (!controls.contains(kind)) return false;
+    const QStringList labels{"Volume", "Brightness", "Keyboard", "Media", "Mic"};
+    return appendItem({{"kind", "control"}, {"label", labels[controls.indexOf(kind)]}, {"command", kind}});
+}
+
+bool Backend::addSceneButton(const QString &label, const QString &target) {
+    const QString title = label.trimmed();
+    if (title.isEmpty() || title.size() > 16 || (!target.isEmpty() && !profiles().contains(target)))
+        return fail(tr("Enter a label (up to 16 characters) and choose a layout."));
+    if (target.isEmpty()) return appendItem({{"kind", "scene-next"}, {"label", title}});
+    return appendItem({{"kind", "scene"}, {"label", title}, {"command", target}});
+}
+
+QString Backend::apps() const {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
+    QStringList names;
+    for (const auto &app : m_profiles[m_selected].toObject().value("apps").toArray())
+        names.append(app.toString());
+    return names.join(", ");
+}
+
+bool Backend::setApps(const QString &list) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray names;
+    for (const auto &part : list.split(',', Qt::SkipEmptyParts)) {
+        const QString name = part.trimmed();
+        if (name.isEmpty()) continue;
+        if (!appClass.match(name).hasMatch() || names.size() >= 8)
+            return fail(tr("Enter at most 8 window classes separated by commas, e.g. firefox."));
+        if (!names.contains(name)) names.append(name);
+    }
+    QJsonArray updated = m_profiles;
+    QJsonObject profile = updated[m_selected].toObject();
+    if (names.isEmpty()) profile.remove("apps");
+    else profile.insert("apps", names);
+    updated[m_selected] = profile;
+    return save(updated, m_selected);
+}
+
+QJsonObject Backend::state() const {
+    QFile file(m_home + "/tbar/state.json");
+    if (!file.open(QIODevice::ReadOnly)) return {};
+    return QJsonDocument::fromJson(file.readAll()).object();
+}
+
+QString Backend::appliedProfile() const { return state().value("applied").toString(); }
+
+QString Backend::manualProfile() const { return state().value("manual").toString(); }
+
+QString Backend::nextProfile() const {
+    const QStringList names = profiles();
+    if (names.isEmpty()) return {};
+    const int index = names.indexOf(appliedProfile());
+    return index < 0 ? names.value(m_selected) : names[(index + 1) % names.size()];
+}
+
+QString Backend::targetForApp(const QString &windowClass) const {
+    QString target;
+    for (const auto &value : m_profiles) {
+        for (const auto &app : value.toObject().value("apps").toArray())
+            if (!windowClass.isEmpty() && app.toString().compare(windowClass, Qt::CaseInsensitive) == 0)
+                target = value.toObject().value("name").toString();
+        if (!target.isEmpty()) break;
+    }
+    if (target.isEmpty()) target = manualProfile();
+    if (target.isEmpty()) target = profiles().value(m_selected);
+    if (!profiles().contains(target) || target == appliedProfile()) return {};
+    return target;
+}
+
+bool Backend::switchProfile(const QString &name, bool manual) {
+    const int index = profiles().indexOf(name);
+    if (index < 0) return fail(tr("Layout not found."));
+    const int previous = m_selected;
+    m_selected = index;
+    const auto restore = qScopeGuard([&] { m_selected = previous; });
+    return write(true, manual);
+}
+
 bool Backend::addExamples() {
     if (m_profiles.isEmpty()) return fail(tr("No valid profile is available."));
     const QJsonArray examples{
@@ -565,6 +676,41 @@ QJsonObject Backend::rendererConfig() const {
         const QString id = QString("tbar.%1").arg(index++);
         const QString encoded = QString::fromLatin1(button.value("command").toString().toUtf8().toBase64());
         QJsonObject spec;
+        const QString section = button.value("section", "left").toString();
+        QJsonArray &target = section == "center" ? center : section == "right" ? right : left;
+        if (kind == "control") {
+            const QString what = button.value("command").toString();
+            const auto sized = [&](QJsonObject item) {
+                if (button.contains("width")) item.insert("width", button.value("width").toInt());
+                return item;
+            };
+            const auto pair = [&](char32_t icon, const QString &down, const QString &up) {
+                const QString glyph = QString::fromUcs4(&icon, 1);
+                const int width = button.value("width", 100).toInt();
+                target.append(QJsonObject{{"id", id + ".down"}, {"type", "button"}, {"icon", glyph},
+                                          {"iconSize", 20}, {"exec", down}, {"repeat", true}, {"width", width}});
+                target.append(QJsonObject{{"id", id + ".up"}, {"type", "button"}, {"icon", glyph},
+                                          {"iconSize", 32}, {"exec", up}, {"repeat", true}, {"width", width}});
+            };
+            if (what == "volume") {
+                for (const QString preset : {"glance.mute", "glance.volume-down", "glance.volume-up"})
+                    target.append(sized(QJsonObject{{"id", preset}}));
+            } else if (what == "brightness") {
+                pair(0xF00DE, "omarchy-brightness-display 5%-", "omarchy-brightness-display +5%");
+            } else if (what == "keyboard") {
+                pair(0xF030C, "omarchy-brightness-keyboard down", "omarchy-brightness-keyboard up");
+            } else {
+                target.append(QJsonObject{{"id", "glance." + what}});
+            }
+            continue;
+        }
+        if (kind == "scene" || kind == "scene-next") {
+            target.append(QJsonObject{{"id", id}, {"type", "button"}, {"label", button.value("label").toString()},
+                                      {"exec", kind == "scene" ? QString("'%1' scene %2").arg(binary, encoded)
+                                                               : QString("'%1' scene-next").arg(binary)},
+                                      {"width", button.value("width", 150).toInt()}});
+            continue;
+        }
         if (kind == "widget") {
             spec = {{"id", "glance." + button.value("command").toString()}};
             if (button.contains("width")) spec.insert("graphWidth", button.value("width").toInt());
@@ -585,10 +731,7 @@ QJsonObject Backend::rendererConfig() const {
                                     {"interval", 5}, {"exec", QString("'%1' status %2 %3 %4")
                                          .arg(binary, kind, label, arg)}};
         }
-        const QString section = button.value("section", "left").toString();
-        if (section == "center") center.append(spec);
-        else if (section == "right") right.append(spec);
-        else left.append(spec);
+        target.append(spec);
     }
     QJsonArray fn{QJsonObject{{"id", "glance.esc"}}};
     for (int i = 1; i <= 12; ++i)
@@ -606,7 +749,11 @@ QJsonObject Backend::rendererConfig() const {
     return result;
 }
 
-bool Backend::apply() {
+bool Backend::apply() { return write(false, true); }
+
+// quick: switch between tbar's own layouts without another timestamped backup;
+// refuses unless the renderer file is exactly what tbar last wrote.
+bool Backend::write(bool quick, bool manual) {
     if (m_profiles.isEmpty()) return fail(tr("No valid profile is available."));
     if (!QDir().mkpath(m_home + "/tbar")) return fail(tr("Could not create the configuration directory."));
     QLockFile profilesLock(m_home + "/tbar/profiles.lock");
@@ -628,6 +775,8 @@ bool Backend::apply() {
         snapshot = QJsonDocument::fromJson(snapshotFile.readAll()).object();
         if (!validSnapshot(snapshot))
             return fail(tr("The original layout backup is invalid."));
+    } else if (quick) {
+        return fail(tr("Apply a layout once before switching layouts."));
     } else {
         const bool existed = QFile::exists(path);
         QByteArray original;
@@ -643,7 +792,12 @@ bool Backend::apply() {
         if (!writeJson(snapshotPath, snapshot, &error))
             return fail(tr("Could not save the original layout backup: %1").arg(error));
     }
-    if (QFile::exists(path)) {
+    if (quick) {
+        QFile current(path);
+        if (!current.open(QIODevice::ReadOnly)
+            || snapshot.value("appliedSha256").toString().toLatin1() != hash(current.readAll()))
+            return fail(tr("The current layout changed outside this app; it was not overwritten."));
+    } else if (QFile::exists(path)) {
         const QString backup = path + ".backup-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-HHmmss-zzz")
                                + "-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
         if (!QFile::copy(path, backup))
@@ -657,6 +811,12 @@ bool Backend::apply() {
         hash(QJsonDocument(config).toJson())));
     if (!writeJson(snapshotPath, snapshot, &error))
         return fail(tr("Layout applied, but the original backup could not be updated: %1").arg(error));
+    const QString name = profiles().value(m_selected);
+    const QString previousManual = manualProfile();
+    if (!writeJson(m_home + "/tbar/state.json", {{"version", 1}, {"applied", name},
+                   {"manual", manual ? name : previousManual}}, &error))
+        return fail(tr("Layout applied, but its state could not be saved: %1").arg(error));
+    emit appliedChanged();
     setMessage(tr("Layout saved for omarchy-glance. Hardware support is required."));
     return true;
 }
@@ -689,6 +849,8 @@ bool Backend::restoreOriginal() {
     } else if (!QFile::remove(path)) {
         return fail(tr("Could not restore the original layout."));
     }
+    QFile::remove(m_home + "/tbar/state.json");
+    emit appliedChanged();
     setMessage(tr("Original renderer configuration restored."));
     return true;
 }

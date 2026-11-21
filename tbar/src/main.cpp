@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLocale>
+#include <QLocalSocket>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
@@ -42,6 +43,8 @@ static QString cliHelp() {
            "       tbar select NAME [--json]\n"
            "       tbar export [NAME] [--json]\n"
            "       tbar apply NAME [--json]\n"
+           "       tbar next [--json]\n"
+           "       tbar watch\n"
            "       tbar restore [--json]\n"
            "       tbar check [--json]\n"
            "       tbar skill install [--json]\n"
@@ -110,21 +113,65 @@ int main(int argc, char **argv) {
         QTextStream(stdout) << QString::fromUtf8(label.decoded) << ": " << status << '\n';
         return 0;
     }
-    if (arguments.size() == 3 && arguments[1] == "action") {
+    const auto unlocked = [] {
         QProcess shellLock;
         shellLock.start("omarchy-shell", {"lock", "isLocked"});
         if (!shellLock.waitForFinished(1500) || shellLock.exitStatus() != QProcess::NormalExit
             || shellLock.exitCode() != 0 || shellLock.readAllStandardOutput().trimmed() != "false")
-            return 1;
+            return false;
         QProcess compositorLock;
         compositorLock.start("omarchy-hyprland-session-locked");
-        if (!compositorLock.waitForFinished(1500) || compositorLock.exitStatus() != QProcess::NormalExit
-            || compositorLock.exitCode() != 1)
-            return 1;
+        return compositorLock.waitForFinished(1500) && compositorLock.exitStatus() == QProcess::NormalExit
+            && compositorLock.exitCode() == 1;
+    };
+    if (arguments.size() == 3 && arguments[1] == "action") {
+        if (!unlocked()) return 1;
         const auto decoded = QByteArray::fromBase64Encoding(arguments[2].toLatin1(), QByteArray::AbortOnBase64DecodingErrors);
         if (!decoded || decoded.decoded.trimmed().isEmpty() || decoded.decoded.contains('\0'))
             return 1;
         return QProcess::startDetached("/bin/sh", {"-c", QString::fromUtf8(decoded.decoded)}) ? 0 : 1;
+    }
+    // Touch Bar buttons: switch to a named layout or to the next one.
+    if ((arguments.size() == 3 && arguments[1] == "scene") || (arguments.size() == 2 && arguments[1] == "scene-next")) {
+        if (!unlocked()) return 1;
+        QString name = backend.nextProfile();
+        if (arguments.size() == 3) {
+            const auto decoded = QByteArray::fromBase64Encoding(arguments[2].toLatin1(),
+                                                                QByteArray::AbortOnBase64DecodingErrors);
+            if (!decoded) return 1;
+            name = QString::fromUtf8(decoded.decoded);
+        }
+        if (backend.switchProfile(name, true)) return 0;
+        QTextStream(stderr) << backend.message() << '\n';
+        return 1;
+    }
+    // Follows the focused Hyprland window and switches to the layout bound to its class.
+    if (arguments.size() == 2 && arguments[1] == "watch") {
+        const QString runtime = qEnvironmentVariable("XDG_RUNTIME_DIR");
+        const QString instance = qEnvironmentVariable("HYPRLAND_INSTANCE_SIGNATURE");
+        if (runtime.isEmpty() || instance.isEmpty()) return cliError("Hyprland is not running in this session.", false);
+        QLocalSocket socket;
+        socket.connectToServer(runtime + "/hypr/" + instance + "/.socket2.sock", QIODevice::ReadOnly);
+        if (!socket.waitForConnected(3000)) return cliError("Could not connect to Hyprland: " + socket.errorString(), false);
+        bool seen = false;
+        QString last;
+        QObject::connect(&socket, &QLocalSocket::readyRead, &app, [&] {
+            while (socket.canReadLine()) {
+                const QString line = QString::fromUtf8(socket.readLine()).trimmed();
+                if (!line.startsWith("activewindow>>")) continue;
+                const QString windowClass = line.mid(14).section(',', 0, 0);
+                // Only a change of application switches, so a layout picked by hand stays until then.
+                if (seen && windowClass == last) continue;
+                seen = true;
+                last = windowClass;
+                Backend current;
+                const QString target = current.targetForApp(windowClass);
+                if (!target.isEmpty() && !current.switchProfile(target, false))
+                    QTextStream(stderr) << current.message() << '\n';
+            }
+        });
+        QObject::connect(&socket, &QLocalSocket::disconnected, &app, [] { QCoreApplication::exit(1); });
+        return app.exec();
     }
     if (arguments.size() > 1 && arguments[1] != "open" && arguments[1] != "--preview") {
         QStringList args = arguments.mid(1);
@@ -190,7 +237,8 @@ int main(int argc, char **argv) {
         if (backend.profiles().isEmpty()) return cliError(backend.message(), json);
         if (command == "list" && args.isEmpty()) {
             printJson({{"profiles", QJsonArray::fromStringList(backend.profiles())},
-                       {"selected", backend.profiles().value(backend.selected())}});
+                       {"selected", backend.profiles().value(backend.selected())},
+                       {"applied", backend.appliedProfile()}});
             return 0;
         }
         if (command == "show" && args.size() == 1) {
@@ -209,6 +257,12 @@ int main(int argc, char **argv) {
             const bool ok = command == "select" ? backend.selectProfile(args[0]) : backend.applyProfile(args[0]);
             if (!ok) return cliError(backend.message(), json);
             printJson({{"ok", true}, {"name", args[0]}});
+            return 0;
+        }
+        if (command == "next" && args.isEmpty()) {
+            const QString name = backend.nextProfile();
+            if (!backend.switchProfile(name, true)) return cliError(backend.message(), json);
+            printJson({{"ok", true}, {"name", name}});
             return 0;
         }
         if (command == "restore" && args.isEmpty()) {

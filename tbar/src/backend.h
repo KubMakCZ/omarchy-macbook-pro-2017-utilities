@@ -20,6 +20,8 @@ class Backend : public QObject {
     Q_PROPERTY(QString previewError READ previewError NOTIFY previewChanged)
     Q_PROPERTY(bool previewFn READ previewFn WRITE setPreviewFn NOTIFY previewChanged)
     Q_PROPERTY(bool themeAuto READ themeAuto NOTIFY changed)
+    Q_PROPERTY(QString apps READ apps NOTIFY changed)
+    Q_PROPERTY(QString applied READ appliedProfile NOTIFY appliedChanged)
 
 public:
     explicit Backend(const QString &configHome = {}, QObject *parent = nullptr);
@@ -33,6 +35,12 @@ public:
     bool previewFn() const { return m_previewFn; }
     bool themeAuto() const;
     void setPreviewFn(bool enabled);
+    QString apps() const;
+    QString appliedProfile() const;
+    QString manualProfile() const;
+    QString nextProfile() const;
+    QString targetForApp(const QString &windowClass) const;
+    bool switchProfile(const QString &name, bool manual);
     Q_INVOKABLE void startPreview();
     Q_INVOKABLE bool select(int index);
     Q_INVOKABLE bool addProfile(const QString &name);
@@ -42,6 +50,9 @@ public:
     Q_INVOKABLE bool addWidget(const QString &kind);
     Q_INVOKABLE bool addExamples();
     Q_INVOKABLE bool addSpacer();
+    Q_INVOKABLE bool addControl(const QString &kind);
+    Q_INVOKABLE bool addSceneButton(const QString &label, const QString &target);
+    Q_INVOKABLE bool setApps(const QString &list);
     Q_INVOKABLE bool editItem(int index, const QString &section, int width,
                               const QString &style, int interval, bool temperature);
     Q_INVOKABLE bool setThemeAuto(bool enabled);
@@ -62,10 +73,14 @@ signals:
     void changed();
     void messageChanged();
     void previewChanged();
+    void appliedChanged();
 
 private:
     bool save(const QJsonArray &profiles, int selected, bool backup = false);
     bool profilesUnchanged();
+    bool appendItem(const QJsonObject &item);
+    bool write(bool quick, bool manual);
+    QJsonObject state() const;
     bool fail(const QString &message);
     void setMessage(const QString &message);
     void updatePreview();

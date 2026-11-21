@@ -54,12 +54,64 @@ with tempfile.TemporaryDirectory() as directory:
     assert not renderer.exists()
     run("select", "Demo", "--json")
     assert run("list")["selected"] == "Demo"
+    # Scene switching: refused until a layout was applied, then cycles without new backups.
+    assert run("list")["applied"] == ""
+    run("next", "--json", success=False)
+    assert not renderer.exists()
+    run("apply", "Omarchy", "--json")
+    assert run("list")["applied"] == "Omarchy"
+    assert run("next", "--json")["name"] == "Demo"
+    assert run("next", "--json")["name"] == "Omarchy"
+    assert not list(renderer.parent.glob("touchbar.json.backup-*"))
+    web = {"name": "Web", "apps": ["firefox"], "buttons": [
+        {"kind": "control", "label": "Volume", "command": "volume"},
+        {"kind": "scene-next", "label": "Next"}]}
+    run("import", "-", "--json", input=json.dumps(web))
+    # tbar watch follows Hyprland's focus events from its event socket.
+    import socket
+    import time
+    runtime = root / "run"
+    (runtime / "hypr" / "test").mkdir(parents=True)
+    server = socket.socket(socket.AF_UNIX)
+    server.bind(str(runtime / "hypr" / "test" / ".socket2.sock"))
+    server.listen(1)
+    watch_env = dict(env, XDG_RUNTIME_DIR=str(runtime), HYPRLAND_INSTANCE_SIGNATURE="test")
+    watcher = subprocess.Popen([binary, "watch"], env=watch_env, stderr=subprocess.PIPE, text=True)
+    try:
+        server.settimeout(10)
+        connection, _ = server.accept()
+
+        def focus(window_class, expected):
+            connection.sendall(f"workspace>>1\nactivewindow>>{window_class},Some, title\n".encode())
+            for _ in range(100):
+                if run("list")["applied"] == expected:
+                    return
+                time.sleep(0.05)
+            raise AssertionError((window_class, expected, run("list")))
+
+        focus("Firefox", "Web")
+        focus("kitty", "Omarchy")
+        focus("firefox", "Web")
+        # A layout picked by hand stays while the same application keeps focus.
+        assert run("next", "--json")["name"] == "Omarchy"
+        focus("firefox", "Omarchy")
+        focus("", "Omarchy")
+        connection.close()
+        assert watcher.wait(timeout=10) == 1
+    finally:
+        watcher.kill()
+        server.close()
+    assert not list(renderer.parent.glob("touchbar.json.backup-*"))
+    run("restore", "--json")
+    assert run("list")["applied"] == ""
     for bad in [
         {"name": "x", "buttons": [{"label": "x", "command": ""}]},
         {"name": "x", "buttons": [{"label": "x", "kind": "widget", "command": "cpu", "width": 15.5}]},
         {"name": "x", "buttons": [{"label": "x", "kind": "process", "command": "firefox;id"}]},
         {"name": "x", "buttons": [], "typo": 1},
         {"name": "x", "buttons": [{"label": "x", "command": "true\0false"}]},
+        {"name": "x", "buttons": [{"label": "x", "kind": "control", "command": "slider"}]},
+        {"name": "x", "apps": ["fire fox"], "buttons": []},
     ]:
         run("validate", "-", "--json", input=json.dumps(bad), success=False)
     run("validate", "-", "--json", input="[]", success=False)

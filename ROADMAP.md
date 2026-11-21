@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-7` (rozšířený agentní skill, licence MIT); tento
+- Zdroj `tbar` v repozitáři je `0.1.0-8` (přepínání scén, ovládací tlačítka, automatika podle aplikace); tento
   balíček zatím nebyl nainstalován.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
@@ -82,11 +82,18 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 
 ## Touch Bar: požadované nápady
 
-- [ ] Přepínání scén přímo na Touch Baru; případně výběr a posouvání seznamu,
-  pokud to renderer a ovládání umožní. Zajistit cestu zpět a dostupné `Esc`.
-- [ ] Volitelné automatické přepínání podle aktivní aplikace, např. Firefox;
-  musí jít vypnout a nesmí ničit ruční výběr. Vyřešit priority, návrat z
-  aplikace a chování po restartu.
+- [x] Přepínání scén přímo na Touch Baru tlačítkem (`scene`, `scene-next`,
+  `tbar next`), implementováno 2026-11-21 v `tbar 0.1.0-8`; prošly testy,
+  **na panelu nepotvrzeno**. Zbývá: výběr ze seznamu a automatické tlačítko
+  zpět.
+- [x] Volitelné automatické přepínání podle aktivní aplikace (`apps`,
+  `tbar-watch.service`), implementováno 2026-11-21; prošly testy s napodobeným
+  Hyprlandem, **na skutečném stroji nepotvrzeno**. Zbývá ověřit chování po
+  restartu a při zamčené obrazovce.
+- [x] Ovládání hlasitosti, jasu displeje, podsvícení klávesnice, médií a
+  mikrofonu jako hotové skupiny tlačítek (`control`), 2026-11-21; náhled
+  rendereru ověřen, **na panelu nepotvrzeno**. Posuvník jako v macOS renderer
+  neumí; vyžadoval by změnu rendereru.
 - [ ] Podpora scén pro programování, grafiku a tvorbu obsahu. Uživatel
   zmiňoval ovládání podobné Macro Deck / Touch Portal: více či méně vlastních
   tlačítek, vlastní akce a výstupní stavy, například zkratky pro Copilot a
@@ -108,8 +115,11 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 - [ ] Ověřit kameru, Bluetooth, sluchátka, externí monitor a USB-C zařízení;
   případně Wi-Fi 5 GHz. Touch ID zatím nebylo nastaveno ani ověřeno.
 - [ ] Uspání do RAM se na tomto stroji neprobudí (log 2026-11-11, uživatel
-  znovu 2026-11-20). Existuje `setup.sh --no-suspend`; uživatel ho ještě musí
-  spustit a potvrdit zavřením víka. Hibernaci a `s2idle` zkoušet pouze po
+  znovu 2026-11-20; tehdy ho vyžádal UPower při vybité baterii). Existuje
+  `setup.sh --no-suspend`, od 2026-11-21 pokrývá i vybitou baterii; uživatel
+  ho ještě musí spustit a potvrdit zavřením víka. Hibernace je v systému
+  připravená (`resume=` na příkazové řádce jádra), další krok je vyzkoušet ji
+  a případně ji nastavit na zavření víka. Hibernaci a `s2idle` zkoušet pouze po
   domluvě a záloze; vyřešit i vypnutí displeje při zavřeném víku.
 - [ ] Zdvojování klávesy `n`: nechat uživatele spustit
   `setup.sh --keyboard-check`. Podle výsledku buď prodloužit prodlevu

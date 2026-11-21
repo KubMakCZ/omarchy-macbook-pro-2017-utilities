@@ -7,6 +7,7 @@
   "properties": {
     "name": {"type": "string", "minLength": 1, "maxLength": 40, "pattern": "^\\S(?:[\\s\\S]*\\S)?$"},
     "theme": {"const": "auto"},
+    "apps": {"type": "array", "maxItems": 8, "items": {"type": "string", "pattern": "^[A-Za-z0-9._+-]{1,64}$"}},
     "buttons": {
       "type": "array", "maxItems": 12,
       "items": {
@@ -15,7 +16,7 @@
         "required": ["label"],
         "properties": {
           "label": {"type": "string", "minLength": 1, "maxLength": 16, "pattern": "^[^\\u0000\\r\\n]*\\S[^\\u0000\\r\\n]*$"},
-          "kind": {"enum": ["button", "internet", "temperature", "process", "widget", "spacer"]},
+          "kind": {"enum": ["button", "internet", "temperature", "process", "widget", "spacer", "control", "scene", "scene-next"]},
           "command": {"type": "string", "maxLength": 1024, "pattern": "^[^\\u0000]*$"},
           "section": {"enum": ["left", "center", "right"]},
           "width": {"type": "integer", "minimum": 10, "maximum": 500},
@@ -28,6 +29,12 @@
            "then": {"required": ["command"], "properties": {"command": {"pattern": "\\S"}}}},
           {"if": {"required": ["kind"], "properties": {"kind": {"const": "widget"}}},
            "then": {"required": ["command"], "properties": {"command": {"enum": ["cpu", "memory", "network", "disk", "battery"]}}}},
+          {"if": {"required": ["kind"], "properties": {"kind": {"const": "control"}}},
+           "then": {"required": ["command"], "properties": {"command": {"enum": ["volume", "brightness", "keyboard", "media", "mic"]}}}},
+          {"if": {"required": ["kind"], "properties": {"kind": {"const": "scene"}}},
+           "then": {"required": ["command"], "properties": {"command": {"maxLength": 40, "pattern": "^\\S(?:[\\s\\S]*\\S)?$"}}}},
+          {"if": {"required": ["kind"], "properties": {"kind": {"const": "scene-next"}}},
+           "then": {"properties": {"command": {"const": ""}}}},
           {"if": {"required": ["kind"], "properties": {"kind": {"const": "process"}}},
            "then": {"required": ["command"], "properties": {"command": {"pattern": "^[A-Za-z0-9._+-]{1,15}$"}}}},
           {"if": {"anyOf": [{"required": ["style"]}, {"required": ["interval"]}]},

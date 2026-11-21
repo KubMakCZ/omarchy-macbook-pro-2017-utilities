@@ -65,6 +65,41 @@ a stav baterie. `IT Demo` kombinuje zkratky s grafy CPU, RAM, sítě a baterií.
 Živé widgety lze přidávat také jednotlivě. Grafy reagují na skutečnou zátěž;
 dostupnost údajů závisí na hardwaru a rendereru.
 
+### Ovládání hlasitosti, jasu a médií
+
+„Přidat ovládání“ vloží hotovou skupinu tlačítek: hlasitost (ztlumit, −, +),
+jas displeje (−, +), podsvícení klávesnice (−, +), přehrávač médií nebo
+mikrofon. Tlačítka − a + se při podržení opakují. **Posuvník jako v macOS
+renderer neumí**; jde o tlačítka. Skupina se počítá jako jedna položka scény,
+i když na panelu zabere dvě až čtyři tlačítka; šířka platí pro každé z nich.
+Tato tlačítka volají příkazy Omarchy přímo z rendereru, takže fungují i při
+zamčené obrazovce.
+
+### Přepínání scén na Touch Baru
+
+„Přidat přepínač rozložení“ vloží tlačítko, které přepne na vybranou scénu
+nebo na další scénu v pořadí. Totéž udělá `tbar next`, který lze dát na
+klávesovou zkratku. Přepínání funguje až poté, co jednu scénu použiješ
+tlačítkem „Použít rozložení“; nevytváří další zálohy a odmítne běžet, pokud
+konfiguraci rendereru mezitím změnil někdo jiný. `Esc` je v každé scéně, ale
+**tlačítko pro návrat si do cílové scény přidej sám**, jinak se zpět dostaneš
+jen z editoru nebo příkazem `tbar next`.
+
+### Automatická scéna podle aplikace
+
+Do pole „Zobrazit pro aplikace“ napiš třídy oken oddělené čárkou, například
+`firefox, code`. Třídu aktivního okna vypíše `hyprctl activewindow`. Když
+běží služba, scéna se použije po přepnutí do dané aplikace a po odchodu se
+vrátí scéna, kterou jsi naposledy zvolil ručně:
+
+```bash
+systemctl --user enable --now tbar-watch.service
+```
+
+Vypnutí: `systemctl --user disable --now tbar-watch.service`. Služba reaguje
+jen na změnu aplikace, takže ručně přepnutá scéna vydrží, dokud nepřejdeš
+jinam. Vyžaduje Hyprland.
+
 ### Umístění a šířky
 
 U položky klikni na „Upravit“ a vyber levou, střední nebo pravou část a šířku;
@@ -130,6 +165,12 @@ definici vypíše `tbar schema --json`.
 | `temperature` | teplota ze senzoru `coretemp` | nepoužívá se |
 | `process` | stav aplikace | přesný název procesu (1–15 znaků: písmena, číslice, `.`, `_`, `+`, `-`) |
 | `spacer` | prázdné místo | prázdný |
+| `control` | skupina ovládacích tlačítek | `volume`, `brightness`, `keyboard`, `media` nebo `mic` |
+| `scene` | přepnutí na scénu | název cílové scény |
+| `scene-next` | přepnutí na další scénu | nepoužívá se |
+
+Scéna může mít pole `apps`: nejvýše 8 tříd oken (písmena, číslice, `.`, `_`,
+`+`, `-`), pro které se použije automaticky; velikost písmen nerozhoduje.
 
 Další pole položky:
 
@@ -175,6 +216,8 @@ tbar import scena.json --replace --json  # nahrazení existující scény se zá
 tbar select "Demo" --json         # změní výběr, ale ne Touch Bar
 tbar export "Demo" --json         # renderer JSON bez použití
 tbar apply "Demo" --json          # použije na Touch Baru, nezmění výběr
+tbar next --json                  # přepne Touch Bar na další scénu
+tbar watch                        # sleduje aktivní okno (běží jako služba)
 tbar restore --json               # bezpečné obnovení původního nastavení
 tbar skill install --json         # volitelný návod pro agenty, nepřepisuje existující
 tbar help
@@ -208,6 +251,8 @@ stroji Touch Bar používá T1Bridge DKMS; při původní kontrole byl zvukový 
 mimo správu balíčků. Aktualizace může funkce rozbít. Návod na
 [instalaci stacku](../docs/INSTALL.md) není zatím ověřen na čistém systému.
 
-Výběr scén přímo na Touch Baru, automatické přepínání podle aktivní aplikace,
-GIFy, libovolný počet prvků a grafické ikony zatím nejsou implementovány.
+Přepínání scén, automatika podle aplikace a ovládací tlačítka prošly testy
+a náhledem rendereru (2026-11-21), **na fyzickém panelu zatím potvrzeny
+nejsou**. Posuvníky, GIFy, libovolný počet prvků a vlastní grafické ikony
+nejsou implementovány.
 Budoucí úpravy OpenCore jsou samostatný úkol; tento projekt bootloader nemění.

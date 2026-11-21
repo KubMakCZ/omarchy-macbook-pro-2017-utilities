@@ -21,7 +21,83 @@ private slots:
     void positionsAndGraphOptions();
     void themedLayoutFollowsChangesSafely();
     void concurrentProfileEdits();
+    void controlsAndSceneSwitching();
 };
+
+void BackendTests::controlsAndSceneSwitching() {
+    QTemporaryDir tmp;
+    const QString renderer = tmp.path() + "/omarchy-glance/touchbar.json";
+    const auto backups = [&] {
+        return QDir(tmp.path() + "/omarchy-glance").entryList({"touchbar.json.backup-*"}).size();
+    };
+    {
+        Backend model(tmp.path());
+        QVERIFY(model.addControl("volume"));
+        QVERIFY(model.addControl("brightness"));
+        QVERIFY(model.addControl("media"));
+        QVERIFY(!model.addControl("slider"));
+        QVERIFY(model.addSceneButton("Next", ""));
+        QVERIFY(!model.addSceneButton("Web", "Missing"));
+        QVERIFY(model.addProfile("Web"));
+        QVERIFY(model.setApps("Firefox, code"));
+        QCOMPARE(model.apps(), QString("Firefox, code"));
+        QVERIFY(!model.setApps("bad class!"));
+        QVERIFY(model.addSceneButton("Back", "Omarchy"));
+        const auto web = model.rendererConfig().value("layers").toObject().value("default").toObject()
+                             .value("left").toArray();
+        QVERIFY(web.last().toObject().value("exec").toString().contains(" scene "));
+        // Nothing may be switched before the user applied a layout once.
+        QVERIFY(!model.switchProfile("Omarchy", true));
+        QVERIFY(!QFile::exists(renderer));
+        QVERIFY(model.applyProfile("Omarchy"));
+        QCOMPARE(model.appliedProfile(), QString("Omarchy"));
+        QCOMPARE(model.nextProfile(), QString("Web"));
+    }
+    QFile file(renderer);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    const auto left = QJsonDocument::fromJson(file.readAll()).object().value("layers").toObject()
+                          .value("default").toObject().value("left").toArray();
+    file.close();
+    QStringList ids;
+    for (const auto &item : left) ids.append(item.toObject().value("id").toString());
+    QVERIFY(ids.contains("glance.mute") && ids.contains("glance.volume-up") && ids.contains("glance.media"));
+    QCOMPARE(left.size(), 13);  // Esc, 5 buttons, volume x3, brightness x2, media, Next
+    QVERIFY(left[9].toObject().value("exec").toString().startsWith("omarchy-brightness-display"));
+    QVERIFY(left[9].toObject().value("repeat").toBool());
+    QVERIFY(left.last().toObject().value("exec").toString().endsWith(" scene-next"));
+    QCOMPARE(backups(), 0);
+    {
+        Backend model(tmp.path());
+        QCOMPARE(model.targetForApp("FIREFOX"), QString("Web"));
+        QCOMPARE(model.targetForApp("kitty"), QString());
+        QVERIFY(model.switchProfile("Web", false));
+        QCOMPARE(model.appliedProfile(), QString("Web"));
+        QCOMPARE(model.manualProfile(), QString("Omarchy"));
+        QCOMPARE(model.targetForApp("firefox"), QString());
+        QCOMPARE(model.targetForApp("kitty"), QString("Omarchy"));
+        QCOMPARE(model.targetForApp(""), QString("Omarchy"));
+        QCOMPARE(model.nextProfile(), QString("Omarchy"));
+        QCOMPARE(backups(), 0);
+        // A layout changed outside tbar is never replaced by a switch.
+        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        file.write("external change");
+        file.close();
+        QVERIFY(!model.switchProfile("Omarchy", true));
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(file.readAll(), QByteArray("external change"));
+        file.close();
+        QCOMPARE(model.appliedProfile(), QString("Web"));
+    }
+    for (const char *bad : {R"({"name":"x","buttons":[{"label":"x","kind":"control","command":"slider"}]})",
+                            R"({"name":"x","buttons":[{"label":"x","kind":"scene","command":""}]})",
+                            R"({"name":"x","buttons":[{"label":"x","kind":"scene-next","command":"y"}]})",
+                            R"({"name":"x","apps":["a b"],"buttons":[]})",
+                            R"({"name":"x","apps":"firefox","buttons":[]})"})
+        QVERIFY2(!Backend::validateProfile(QJsonDocument::fromJson(bad).object()).isEmpty(), bad);
+    QVERIFY(Backend::validateProfile(QJsonDocument::fromJson(
+        R"({"name":"x","apps":["firefox"],"buttons":[{"label":"Vol","kind":"control","command":"volume"},
+            {"label":"N","kind":"scene-next"},{"label":"W","kind":"scene","command":"Web"}]})").object()).isEmpty());
+}
 
 void BackendTests::concurrentProfileEdits() {
     QTemporaryDir tmp;
