@@ -8,6 +8,7 @@
 #include <QTemporaryDir>
 #include <QTimer>
 #include <QUrl>
+#include <QVariantMap>
 
 class Backend : public QObject {
     Q_OBJECT
@@ -21,6 +22,7 @@ class Backend : public QObject {
     Q_PROPERTY(bool previewFn READ previewFn WRITE setPreviewFn NOTIFY previewChanged)
     Q_PROPERTY(QString themeStyle READ themeStyle NOTIFY changed)
     Q_PROPERTY(QString apps READ apps NOTIFY changed)
+    Q_PROPERTY(QVariantMap look READ look NOTIFY changed)
     Q_PROPERTY(QString applied READ appliedProfile NOTIFY appliedChanged)
 
 public:
@@ -37,6 +39,7 @@ public:
     Q_INVOKABLE bool setThemeStyle(const QString &style, bool everywhere);
     void setPreviewFn(bool enabled);
     QString apps() const;
+    QVariantMap look() const;
     QString appliedProfile() const;
     QString manualProfile() const;
     QString nextProfile() const;
@@ -54,6 +57,8 @@ public:
     Q_INVOKABLE bool addControl(const QString &kind);
     Q_INVOKABLE bool addSceneButton(const QString &label, const QString &target);
     Q_INVOKABLE bool setApps(const QString &list);
+    Q_INVOKABLE bool setLook(const QString &escLabel, const QString &escIcon, const QString &font, int idleDim);
+    Q_INVOKABLE bool setItemIcon(int index, const QString &icon);
     Q_INVOKABLE bool editItem(int index, const QString &section, int width,
                               const QString &style, int interval, bool temperature);
     Q_INVOKABLE bool setThemeAuto(bool enabled);

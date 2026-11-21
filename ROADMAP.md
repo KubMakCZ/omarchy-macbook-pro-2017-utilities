@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-9` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev); nainstalován
+- Zdroj `tbar` v repozitáři je `0.1.0-10` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
   2026-11-21.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
@@ -130,13 +130,13 @@ novou připnutou revizi v `install-glance.sh`):
   `blue`, `cyan`, `green`, `yellow`, `orange`, `red`) a volbu „Použít pro
   všechna rozložení“. Prošly testy a náhled rendereru s tématem Catppuccin;
   uživatel na panelu vyzkoušel `magenta` a `tinted` a ponechal si `tinted` ve
-  všech scénách. Automatická změna barev při přepnutí tématu ověřena není. Zbývá ruční výběr libovolné barvy; Catppuccin
+  všech scénách. Automatická změna barev při přepnutí tématu ověřena není. Catppuccin
   v Omarchy nemá fialovou (`accent` je modrá, `magenta` růžová).
-- [ ] Vlastní Esc (jen `tbar`): renderer umí tlačítko s `key: "esc"` a vlastním
-  popiskem nebo glyfem z Nerd Fontu, takže Esc s jiným textem či ikonou jde
-  bez zásahu do rendereru. Totéž platí pro globální písmo lišty (`font`).
-- [ ] Ikony na vlastních tlačítkách (jen `tbar`): renderer má `icon`
-  (glyf Nerd Fontu) a `iconSize`; scéna dnes umí jen textový popisek.
+- [x] Vlastní barva `#rrggbb`, vlastní text nebo ikona Esc, ikony (glyfy
+  Nerd Fontu) na tlačítkách a přepínačích scén, písmo lišty a ztlumení po
+  nečinnosti: `tbar 0.1.0-10` (2026-11-21). Prošly testy a náhled rendereru;
+  **na panelu nepotvrzeno**. Zbývá pohodlný výběr ikon a barvy v GUI (dnes se
+  znak i kód barvy zadávají ručně).
 - [ ] Barva jednotlivých tlačítek: renderer má barvy jen pro celou lištu.
   Vyžaduje zásah do rendereru.
 - [ ] Obrázek PNG místo Esc nebo na tlačítku, obrázkové pozadí lišty a

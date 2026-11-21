@@ -129,7 +129,20 @@ z aktuálního tématu Omarchy, i vlastního:
 | `accent`, `magenta`, `blue`, `cyan`, `green`, `yellow`, `orange`, `red` | `darker_background` | zvolená barva tématu | `darker_background` |
 
 Po použití scény hook při změně tématu bezpečně
-aktualizuje barvy; nezasáhne do konfigurace změněné mimo editor. Grafy používají
+aktualizuje barvy; nezasáhne do konfigurace změněné mimo editor.
+
+„Vlastní barva“ nastaví tlačítkům pevnou barvu `#rrggbb` (například fialová
+`#cba6f7`) na černé liště; text je černý nebo bílý podle jasu barvy. Pevná
+barva se s tématem nemění.
+
+### Escape, ikony, písmo a ztlumení
+
+Řádek „Escape“ změní vzhled celé scény: vlastní text nebo ikonu klávesy Esc
+(dál posílá Escape), písmo lišty a dobu nečinnosti, po které lišta ztmavne na
+čtvrtinu jasu (0 = nikdy). U tlačítka a přepínače rozložení jde v „Upravit“
+zadat „Ikona místo textu“. Ikona je jeden znak z Nerd Fontu; znak zkopíruj
+z přehledu na [nerdfonts.com/cheat-sheet](https://www.nerdfonts.com/cheat-sheet).
+Obrázky PNG, různé barvy jednotlivých tlačítek a animace renderer neumí. Grafy používají
 výchozí barvy tématu btop, které renderer průběžně sleduje. Automatická změna
 barev tlačítek vyžaduje nainstalovaný hook, není vázaná na otevřený editor.
 
@@ -194,6 +207,12 @@ Další pole položky:
 - `style`: `dots` nebo `bars`, jen pro grafy.
 - `interval`: 1–60 sekund, jen pro grafy.
 - `temperature`: `true` nebo `false`, jen pro graf `cpu`.
+- `icon`: jeden znak (nejvýše 4 kódové jednotky) místo textu, jen pro
+  `button`, `scene` a `scene-next`.
+
+Další pole scény: `theme` (styl z tabulky výše nebo `#rrggbb`), `escLabel`
+(1–16 znaků), `escIcon` (jeden znak, má přednost), `font` (název rodiny písma)
+a `idleDim` (0–3600 sekund).
 
 ## Náhled, zálohy a obnovení
 

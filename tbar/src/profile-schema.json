@@ -6,7 +6,12 @@
   "required": ["name", "buttons"],
   "properties": {
     "name": {"type": "string", "minLength": 1, "maxLength": 40, "pattern": "^\\S(?:[\\s\\S]*\\S)?$"},
-    "theme": {"enum": ["auto", "tinted", "accent", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"]},
+    "theme": {"anyOf": [{"enum": ["auto", "tinted", "accent", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"]},
+                        {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"}]},
+    "escLabel": {"type": "string", "minLength": 1, "maxLength": 16, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$"},
+    "escIcon": {"type": "string", "minLength": 1, "maxLength": 4, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$"},
+    "font": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$"},
+    "idleDim": {"type": "integer", "minimum": 0, "maximum": 3600},
     "apps": {"type": "array", "maxItems": 8, "items": {"type": "string", "pattern": "^[A-Za-z0-9._+-]{1,64}$"}},
     "buttons": {
       "type": "array", "maxItems": 12,
@@ -22,7 +27,8 @@
           "width": {"type": "integer", "minimum": 10, "maximum": 500},
           "style": {"enum": ["dots", "bars"]},
           "interval": {"type": "integer", "minimum": 1, "maximum": 60},
-          "temperature": {"type": "boolean"}
+          "temperature": {"type": "boolean"},
+          "icon": {"type": "string", "minLength": 1, "maxLength": 4, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$"}
         },
         "allOf": [
           {"if": {"properties": {"kind": {"const": "button"}}},
@@ -39,6 +45,8 @@
            "then": {"required": ["command"], "properties": {"command": {"pattern": "^[A-Za-z0-9._+-]{1,15}$"}}}},
           {"if": {"anyOf": [{"required": ["style"]}, {"required": ["interval"]}]},
            "then": {"required": ["kind"], "properties": {"kind": {"const": "widget"}}}},
+          {"if": {"required": ["icon"]},
+           "then": {"properties": {"kind": {"enum": ["button", "scene", "scene-next"]}}}},
           {"if": {"required": ["temperature"]},
            "then": {"required": ["kind", "command"], "properties": {"kind": {"const": "widget"}, "command": {"const": "cpu"}}}}
         ]

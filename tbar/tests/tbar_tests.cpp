@@ -93,6 +93,10 @@ void BackendTests::controlsAndSceneSwitching() {
                             R"({"name":"x","buttons":[{"label":"x","kind":"scene-next","command":"y"}]})",
                             R"({"name":"x","apps":["a b"],"buttons":[]})",
                             R"({"name":"x","theme":"rainbow","buttons":[]})",
+                            R"({"name":"x","theme":"#12","buttons":[]})",
+                            R"({"name":"x","idleDim":1.5,"buttons":[]})",
+                            R"({"name":"x","escLabel":"a\nb","buttons":[]})",
+                            R"({"name":"x","buttons":[{"label":"x","kind":"widget","command":"cpu","icon":"K"}]})",
                             R"({"name":"x","apps":"firefox","buttons":[]})"})
         QVERIFY2(!Backend::validateProfile(QJsonDocument::fromJson(bad).object()).isEmpty(), bad);
     QVERIFY(Backend::validateProfile(QJsonDocument::fromJson(
@@ -364,6 +368,47 @@ void BackendTests::themedLayoutFollowsChangesSafely() {
     QCOMPARE(colors.value("key").toString(), QString("#45475a"));
     QVERIFY(model.setThemeStyle("", true));
     QVERIFY(!model.exportProfile("Omarchy").contains("colors"));
+    QVERIFY(!model.setThemeStyle("#12345", false));
+    QVERIFY(model.setThemeStyle("#CBA6F7", false));
+    colors = model.rendererConfig().value("colors").toObject();
+    QCOMPARE(colors.value("key").toString(), QString("#cba6f7"));
+    QCOMPARE(colors.value("text").toString(), QString("#000000"));
+    QVERIFY(model.setThemeStyle("#202040", false));
+    QCOMPARE(model.rendererConfig().value("colors").toObject().value("text").toString(), QString("#ffffff"));
+    QVERIFY(model.syncTheme());
+    QVERIFY(model.setLook("  ", "", "Some Font", 120));
+    QVERIFY(!model.setLook("this label is far too long", "", "", 0));
+    QVERIFY(!model.setLook("", "", "", 4000));
+    auto look = model.rendererConfig();
+    QCOMPARE(look.value("font").toString(), QString("Some Font"));
+    QCOMPARE(look.value("idleDimSeconds").toInt(), 120);
+    auto escKey = look.value("layers").toObject().value("default").toObject().value("left").toArray()[0].toObject();
+    QCOMPARE(escKey.value("id").toString(), QString("glance.esc"));
+    QVERIFY(model.setLook("zpet", "", "", 0));
+    look = model.rendererConfig();
+    QVERIFY(!look.contains("font") && !look.contains("idleDimSeconds"));
+    escKey = look.value("layers").toObject().value("fn").toObject().value("left").toArray()[0].toObject();
+    QCOMPARE(escKey.value("key").toString(), QString("esc"));
+    QCOMPARE(escKey.value("label").toString(), QString("zpet"));
+    QVERIFY(model.setLook("zpet", "X", "", 0));
+    escKey = model.rendererConfig().value("layers").toObject().value("default").toObject()
+                 .value("left").toArray()[0].toObject();
+    QCOMPARE(escKey.value("icon").toString(), QString("X"));
+    QVERIFY(!escKey.contains("label"));
+    QVERIFY(model.setLook("", "", "", 0));
+    QVERIFY(model.addButton("Keys", "true"));
+    const int last = model.buttons().size() - 1;
+    QVERIFY(model.setItemIcon(last, "K"));
+    QVERIFY(!model.setItemIcon(last, "too long"));
+    auto keys = model.rendererConfig().value("layers").toObject().value("default").toObject()
+                    .value("left").toArray().last().toObject();
+    QCOMPARE(keys.value("icon").toString(), QString("K"));
+    QVERIFY(!keys.contains("label"));
+    QVERIFY(model.addWidget("cpu"));
+    QVERIFY(!model.setItemIcon(last + 1, "K"));
+    QVERIFY(model.removeButton(last + 1));
+    QVERIFY(model.removeButton(last));
+    QVERIFY(model.setThemeStyle("", true));
     QVERIFY(model.setThemeAuto(true));
     QVERIFY(model.apply());
     const QString path = tmp.path() + "/config/omarchy-glance/touchbar.json";

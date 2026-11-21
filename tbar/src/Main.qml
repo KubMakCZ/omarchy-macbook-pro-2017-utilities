@@ -93,18 +93,79 @@ ApplicationWindow {
                     objectName: "themeStyle"
                     Layout.fillWidth: true
                     readonly property var styles: ["", "auto", "tinted", "accent", "magenta", "blue",
-                                                   "cyan", "green", "yellow", "orange", "red"]
+                                                   "cyan", "green", "yellow", "orange", "red", "#"]
                     model: [qsTr("Default grey"), qsTr("Omarchy theme: subtle"), qsTr("Omarchy theme: tinted bar"),
                             qsTr("Omarchy theme: accent keys"), qsTr("Omarchy theme: magenta keys"),
                             qsTr("Omarchy theme: blue keys"), qsTr("Omarchy theme: cyan keys"),
                             qsTr("Omarchy theme: green keys"), qsTr("Omarchy theme: yellow keys"),
-                            qsTr("Omarchy theme: orange keys"), qsTr("Omarchy theme: red keys")]
-                    currentIndex: Math.max(0, styles.indexOf(backend.themeStyle))
-                    onActivated: function(index) { backend.setThemeStyle(styles[index], false) }
+                            qsTr("Omarchy theme: orange keys"), qsTr("Omarchy theme: red keys"),
+                            qsTr("Own colour")]
+                    readonly property bool own: currentIndex === styles.length - 1
+                    readonly property string chosen: own ? customColor.text : styles[currentIndex]
+                    currentIndex: backend.themeStyle.charAt(0) === "#" ? styles.length - 1
+                                                                       : Math.max(0, styles.indexOf(backend.themeStyle))
+                    onActivated: function(index) { if (!own) backend.setThemeStyle(styles[index], false) }
+                }
+                TextField {
+                    id: customColor
+                    objectName: "customColor"
+                    visible: themeStyle.own
+                    Layout.preferredWidth: 110
+                    maximumLength: 7
+                    placeholderText: "#cba6f7"
+                    text: backend.themeStyle.charAt(0) === "#" ? backend.themeStyle : ""
+                    onAccepted: backend.setThemeStyle(text, false)
+                }
+                Button {
+                    visible: themeStyle.own
+                    text: qsTr("Set colour")
+                    onClicked: backend.setThemeStyle(customColor.text, false)
                 }
                 Button {
                     text: qsTr("Use for all layouts")
-                    onClicked: backend.setThemeStyle(themeStyle.styles[themeStyle.currentIndex], true)
+                    onClicked: backend.setThemeStyle(themeStyle.chosen, true)
+                }
+            }
+            RowLayout {
+                Label { text: qsTr("Escape") }
+                TextField {
+                    id: escLabel
+                    Layout.preferredWidth: 110
+                    maximumLength: 16
+                    placeholderText: qsTr("Text")
+                    text: backend.look.escLabel
+                }
+                TextField {
+                    id: escIcon
+                    Layout.preferredWidth: 70
+                    maximumLength: 4
+                    placeholderText: qsTr("Icon")
+                    text: backend.look.escIcon
+                }
+                Label { text: qsTr("Font") }
+                TextField {
+                    id: lookFont
+                    Layout.fillWidth: true
+                    maximumLength: 64
+                    placeholderText: "JetBrainsMono Nerd Font"
+                    text: backend.look.font
+                }
+                Label { text: qsTr("Dim after (s)") }
+                SpinBox { id: lookDim; from: 0; to: 3600; stepSize: 10; editable: true; value: backend.look.idleDim }
+                Button {
+                    text: qsTr("Save look")
+                    objectName: "saveLook"
+                    onClicked: backend.setLook(escLabel.text, escIcon.text, lookFont.text, lookDim.value)
+                }
+                Connections {
+                    target: backend
+                    function onChanged() {
+                        escLabel.text = backend.look.escLabel
+                        escIcon.text = backend.look.escIcon
+                        lookFont.text = backend.look.font
+                        lookDim.value = backend.look.idleDim
+                        customColor.text = backend.themeStyle.charAt(0) === "#" ? backend.themeStyle : ""
+                    }
                 }
             }
             RowLayout {
@@ -328,8 +389,11 @@ ApplicationWindow {
         property int itemIndex: -1
         property bool graph: false
         property bool cpu: false
+        property bool iconic: false
         function openItem(index, item) {
             itemIndex = index
+            iconic = item.kind === undefined || item.kind === "button" || item.kind === "scene" || item.kind === "scene-next"
+            itemIcon.text = item.icon === undefined ? "" : item.icon
             graph = item.kind === "widget"
             cpu = graph && item.command === "cpu"
             itemSection.currentIndex = item.section === "center" ? 1 : item.section === "right" ? 2 : 0
@@ -339,9 +403,12 @@ ApplicationWindow {
             itemTemperature.checked = item.temperature === true
             open()
         }
-        onAccepted: backend.editItem(itemIndex, ["left", "center", "right"][itemSection.currentIndex],
-                                     itemWidth.value, ["dots", "bars"][itemStyle.currentIndex],
-                                     itemInterval.value, itemTemperature.checked)
+        onAccepted: {
+            backend.editItem(itemIndex, ["left", "center", "right"][itemSection.currentIndex],
+                             itemWidth.value, ["dots", "bars"][itemStyle.currentIndex],
+                             itemInterval.value, itemTemperature.checked)
+            if (iconic) backend.setItemIcon(itemIndex, itemIcon.text)
+        }
         ScrollView {
             id: settingsScroll
             implicitWidth: Math.min(390, root.width - 80)
@@ -376,6 +443,16 @@ ApplicationWindow {
                     SpinBox { id: itemInterval; from: 1; to: 60; editable: true }
                 }
                 CheckBox { id: itemTemperature; visible: itemSettings.cpu; text: qsTr("Show CPU temperature") }
+                RowLayout {
+                    visible: itemSettings.iconic
+                    Label { text: qsTr("Icon instead of text") }
+                    TextField {
+                        id: itemIcon
+                        Layout.fillWidth: true
+                        maximumLength: 4
+                        placeholderText: qsTr("One Nerd Font glyph")
+                    }
+                }
             }
         }
     }

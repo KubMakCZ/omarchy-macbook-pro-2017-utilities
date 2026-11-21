@@ -30,7 +30,30 @@ const QRegularExpression appClass("^[A-Za-z0-9._+-]{1,64}$");
 const QStringList vivid{"accent", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"};
 const QStringList themeStyles = QStringList{"auto", "tinted"} + vivid;
 
+const QRegularExpression hexColor("^#[0-9a-fA-F]{6}$");
+
+bool validTheme(const QString &style) {
+    return themeStyles.contains(style) || hexColor.match(style).hasMatch();
+}
+
+// A glyph (usually from the Nerd Font) or a short text without control characters.
+bool validText(const QJsonValue &value, int max) {
+    const QString text = value.toString();
+    if (!value.isString() || text.trimmed().isEmpty() || text.size() > max) return false;
+    for (const QChar c : text)
+        if (c.category() == QChar::Other_Control) return false;
+    return true;
+}
+
 QJsonObject themeColors(const QString &style) {
+    if (hexColor.match(style).hasMatch()) {
+        // A hand-picked key colour: black bar, and black or white text by brightness.
+        const int r = style.mid(1, 2).toInt(nullptr, 16), g = style.mid(3, 2).toInt(nullptr, 16),
+                  b = style.mid(5, 2).toInt(nullptr, 16);
+        const bool light = 299 * r + 587 * g + 114 * b > 140000;
+        return {{"background", "#000000"}, {"key", style.toLower()},
+                {"keyPressed", light ? "#ffffff" : "#808080"}, {"text", light ? "#000000" : "#ffffff"}};
+    }
     const QString state = qEnvironmentVariable("XDG_STATE_HOME", QDir::homePath() + "/.local/state");
     QFile file(state + "/omarchy/current/theme/colors.toml");
     QJsonObject colors;
@@ -168,7 +191,7 @@ Backend::Backend(const QString &configHome, QObject *parent)
         const auto obj = item.toObject();
         if (!item.isObject() || obj.value("name").toString().trimmed().isEmpty()
             || !obj.value("buttons").isArray() || obj.value("buttons").toArray().size() > 12
-            || (obj.contains("theme") && !themeStyles.contains(obj.value("theme").toString()))
+            || (obj.contains("theme") && !validTheme(obj.value("theme").toString()))
             || (obj.contains("apps") && !obj.value("apps").isArray())) {
             m_message = tr("Profiles are invalid. The file was not changed.");
             return;
@@ -222,7 +245,7 @@ QString Backend::themeStyle() const {
 
 bool Backend::setThemeStyle(const QString &style, bool everywhere) {
     if (m_selected < 0 || m_selected >= m_profiles.size()
-        || (!style.isEmpty() && !themeStyles.contains(style))) return false;
+        || (!style.isEmpty() && !validTheme(style))) return false;
     QJsonArray updated = m_profiles;
     for (int index = 0; index < updated.size(); ++index) {
         if (!everywhere && index != m_selected) continue;
@@ -334,7 +357,7 @@ QJsonObject Backend::profile(const QString &name) const {
 }
 
 QString Backend::validateProfile(const QJsonObject &profile) {
-    const QStringList profileKeys{"name", "theme", "apps", "buttons"};
+    const QStringList profileKeys{"name", "theme", "apps", "buttons", "escLabel", "escIcon", "font", "idleDim"};
     for (auto it = profile.begin(); it != profile.end(); ++it)
         if (!profileKeys.contains(it.key())) return "Unknown profile field: " + it.key();
     if (!profile.value("name").isString() || profile.value("name").toString().trimmed().isEmpty()
@@ -342,8 +365,18 @@ QString Backend::validateProfile(const QJsonObject &profile) {
         || profile.value("name").toString() != profile.value("name").toString().trimmed())
         return "name must be a non-empty trimmed string of at most 40 characters";
     if (profile.contains("theme") && (!profile.value("theme").isString()
-        || !themeStyles.contains(profile.value("theme").toString())))
-        return "theme must be one of: " + themeStyles.join(", ");
+        || !validTheme(profile.value("theme").toString())))
+        return "theme must be #rrggbb or one of: " + themeStyles.join(", ");
+    if (profile.contains("escLabel") && !validText(profile.value("escLabel"), 16))
+        return "escLabel must be a single line of 1-16 characters";
+    if (profile.contains("escIcon") && !validText(profile.value("escIcon"), 4))
+        return "escIcon must be a glyph of 1-4 characters";
+    if (profile.contains("font") && !validText(profile.value("font"), 64))
+        return "font must be a font family name of 1-64 characters";
+    if (profile.contains("idleDim") && (!profile.value("idleDim").isDouble()
+        || profile.value("idleDim").toDouble() != profile.value("idleDim").toInt()
+        || profile.value("idleDim").toInt() < 0 || profile.value("idleDim").toInt() > 3600))
+        return "idleDim must be an integer from 0 to 3600 seconds";
     if (profile.contains("apps")) {
         if (!profile.value("apps").isArray() || profile.value("apps").toArray().size() > 8)
             return "apps must be an array of at most 8 window classes";
@@ -353,7 +386,8 @@ QString Backend::validateProfile(const QJsonObject &profile) {
     }
     if (!profile.value("buttons").isArray() || profile.value("buttons").toArray().size() > 12)
         return "buttons must be an array of at most 12 items";
-    const QStringList itemKeys{"label", "kind", "command", "section", "width", "style", "interval", "temperature"};
+    const QStringList itemKeys{"label", "kind", "command", "section", "width", "style", "interval",
+                               "temperature", "icon"};
     int index = 0;
     for (const auto &value : profile.value("buttons").toArray()) {
         const QString prefix = QString("buttons[%1]: ").arg(index++);
@@ -375,6 +409,9 @@ QString Backend::validateProfile(const QJsonObject &profile) {
         if (command.contains('\0') || command.size() > 1024 || (kind == "button" && command.trimmed().isEmpty()))
             return prefix + "button command must be non-empty and at most 1024 characters";
         if (kind == "widget" && !widgets.contains(command)) return prefix + "unknown widget";
+        if (item.contains("icon") && (!QStringList{"button", "scene", "scene-next"}.contains(kind)
+            || !validText(item.value("icon"), 4)))
+            return prefix + "icon must be a glyph of 1-4 characters on a button or scene switch";
         if (kind == "control" && !controls.contains(command))
             return prefix + "control must be volume, brightness, keyboard, media or mic";
         if (kind == "scene" && (command.trimmed().isEmpty() || command != command.trimmed() || command.size() > 40))
@@ -595,6 +632,48 @@ QString Backend::apps() const {
     return names.join(", ");
 }
 
+QVariantMap Backend::look() const {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
+    const QJsonObject scene = m_profiles[m_selected].toObject();
+    return {{"escLabel", scene.value("escLabel").toString()}, {"escIcon", scene.value("escIcon").toString()},
+            {"font", scene.value("font").toString()}, {"idleDim", scene.value("idleDim").toInt()}};
+}
+
+bool Backend::setLook(const QString &escLabel, const QString &escIcon, const QString &font, int idleDim) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray updated = m_profiles;
+    QJsonObject scene = updated[m_selected].toObject();
+    const QList<QPair<QString, QString>> texts{{"escLabel", escLabel.trimmed()}, {"escIcon", escIcon.trimmed()},
+                                               {"font", font.trimmed()}};
+    for (const auto &text : texts) {
+        if (text.second.isEmpty()) scene.remove(text.first);
+        else scene.insert(text.first, text.second);
+    }
+    if (idleDim > 0) scene.insert("idleDim", idleDim);
+    else scene.remove("idleDim");
+    const QString error = validateProfile(scene);
+    if (!error.isEmpty()) return fail(tr("Check the Escape text or icon, the font and the dimming time."));
+    updated[m_selected] = scene;
+    return save(updated, m_selected);
+}
+
+bool Backend::setItemIcon(int index, const QString &icon) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray updated = m_profiles;
+    QJsonObject scene = updated[m_selected].toObject();
+    QJsonArray items = scene.value("buttons").toArray();
+    if (index < 0 || index >= items.size()) return false;
+    QJsonObject item = items[index].toObject();
+    if (item.value("icon").toString() == icon.trimmed()) return true;
+    if (icon.trimmed().isEmpty()) item.remove("icon");
+    else item.insert("icon", icon.trimmed());
+    items[index] = item;
+    scene.insert("buttons", items);
+    if (!validateProfile(scene).isEmpty()) return fail(tr("An icon is one glyph on a button or layout switch."));
+    updated[m_selected] = scene;
+    return save(updated, m_selected);
+}
+
 bool Backend::setApps(const QString &list) {
     if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
     QJsonArray names;
@@ -683,7 +762,19 @@ bool Backend::addExamples() {
 }
 
 QJsonObject Backend::rendererConfig() const {
-    QJsonArray left{QJsonObject{{"id", "glance.esc"}}}, center, right;
+    const QJsonObject scene = m_selected >= 0 && m_selected < m_profiles.size()
+        ? m_profiles[m_selected].toObject() : QJsonObject();
+    QJsonObject esc{{"id", "glance.esc"}};
+    if (scene.contains("escIcon"))
+        esc = {{"id", "tbar.esc"}, {"type", "button"}, {"key", "esc"}, {"icon", scene.value("escIcon")}, {"width", 140}};
+    else if (scene.contains("escLabel"))
+        esc = {{"id", "tbar.esc"}, {"type", "button"}, {"key", "esc"}, {"label", scene.value("escLabel")}, {"width", 140}};
+    // An icon replaces the text of a button.
+    const auto face = [](const QVariantMap &item) {
+        return item.contains("icon") ? QPair<QString, QJsonValue>{"icon", item.value("icon").toString()}
+                                     : QPair<QString, QJsonValue>{"label", item.value("label").toString()};
+    };
+    QJsonArray left{esc}, center, right;
     int index = 0;
     for (const auto &item : buttons()) {
         const auto button = item.toMap();
@@ -722,7 +813,7 @@ QJsonObject Backend::rendererConfig() const {
             continue;
         }
         if (kind == "scene" || kind == "scene-next") {
-            target.append(QJsonObject{{"id", id}, {"type", "button"}, {"label", button.value("label").toString()},
+            target.append(QJsonObject{{"id", id}, {"type", "button"}, {face(button).first, face(button).second},
                                       {"exec", kind == "scene" ? QString("'%1' scene %2").arg(binary, encoded)
                                                                : QString("'%1' scene-next").arg(binary)},
                                       {"width", button.value("width", 150).toInt()}});
@@ -739,7 +830,7 @@ QJsonObject Backend::rendererConfig() const {
         } else if (kind == "button") {
             const QString command = QString("'%1' action %2").arg(binary, encoded);
             spec = QJsonObject{{"id", id}, {"type", "button"},
-                                    {"label", button.value("label").toString()},
+                                    {face(button).first, face(button).second},
                                     {"exec", command}, {"width", button.value("width", 150).toInt()}};
         } else {
             const QString label = QString::fromLatin1(button.value("label").toString().toUtf8().toBase64());
@@ -750,7 +841,7 @@ QJsonObject Backend::rendererConfig() const {
         }
         target.append(spec);
     }
-    QJsonArray fn{QJsonObject{{"id", "glance.esc"}}};
+    QJsonArray fn{esc};
     for (int i = 1; i <= 12; ++i)
         fn.append(QJsonObject{{"id", QString("tbar.f%1").arg(i)}, {"type", "button"},
                               {"label", QString("F%1").arg(i)}, {"key", QString("f%1").arg(i)},
@@ -759,6 +850,8 @@ QJsonObject Backend::rendererConfig() const {
         {"default", QJsonObject{{"left", left}, {"center", center}, {"right", right}}},
         {"fn", QJsonObject{{"left", fn}}}
     }}};
+    if (scene.contains("font")) result.insert("font", scene.value("font"));
+    if (scene.contains("idleDim")) result.insert("idleDimSeconds", scene.value("idleDim"));
     if (!themeStyle().isEmpty()) {
         result.insert("tbar", QJsonObject{{"theme", themeStyle()}});
         result.insert("colors", themeColors(themeStyle()));
@@ -889,7 +982,7 @@ bool Backend::syncTheme() {
     QJsonObject config = QJsonDocument::fromJson(data, &error).object();
     if (error.error != QJsonParseError::NoError) return fail(tr("The renderer configuration is invalid."));
     const QString style = config.value("tbar").toObject().value("theme").toString();
-    if (!themeStyles.contains(style)) return true;
+    if (!themeStyles.contains(style)) return true;  // a fixed colour does not follow the theme
     QFile snapshotFile(snapshotPath);
     if (!snapshotFile.open(QIODevice::ReadOnly)) return fail(tr("Could not read the original layout backup."));
     QJsonObject snapshot = QJsonDocument::fromJson(snapshotFile.readAll()).object();

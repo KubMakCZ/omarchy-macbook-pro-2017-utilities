@@ -53,7 +53,12 @@ tbar was first used, and refuses if that layout was changed outside tbar.
   custom one) with `"auto"` (subtle keys on a black bar), `"tinted"` (bar in
   the theme background) or keys painted in a theme colour: `"accent"`,
   `"magenta"`, `"blue"`, `"cyan"`, `"green"`, `"yellow"`, `"orange"`, `"red"`.
-  Colours are refreshed when the theme changes.
+  Colours are refreshed when the theme changes. A fixed key colour is
+  `"#rrggbb"` (black bar, black or white text chosen for contrast).
+- `escLabel` (1-16 characters) or `escIcon` (one glyph, wins over the label)
+  replace the face of the Escape key; it still sends Escape.
+- `font`: font family for the whole bar, e.g. `"JetBrainsMono Nerd Font"`.
+- `idleDim`: seconds without a touch before the bar dims (0 or omitted: never).
 - `apps`: optional, at most 8 Hyprland window classes (`A-Za-z0-9._+-`,
   case-insensitive, see `hyprctl activewindow`). While the user's
   `tbar-watch.service` runs, the scene is shown when such a window is focused
@@ -74,7 +79,9 @@ tbar was first used, and refuses if that layout was changed outside tbar.
   independently and overlap when too wide; keep the total width modest.
 - `width`: integer 10-500. `style` (`dots` or `bars`) and `interval`
   (1-60 seconds) are valid only on widgets; `temperature` (boolean) only on
-  the `cpu` widget. Unknown fields are rejected.
+  the `cpu` widget. `icon` (one Nerd Font glyph, 1-4 characters) replaces the
+  text on a `button`, `scene` or `scene-next`; `label` stays required as its
+  name in the editor. Unknown fields are rejected.
 
 ## Safety
 

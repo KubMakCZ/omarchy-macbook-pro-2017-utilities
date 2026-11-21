@@ -122,5 +122,17 @@
   "Omarchy theme: yellow keys": "Téma Omarchy: žlutá tlačítka",
   "Omarchy theme: orange keys": "Téma Omarchy: oranžová tlačítka",
   "Omarchy theme: red keys": "Téma Omarchy: červená tlačítka",
-  "Use for all layouts": "Použít pro všechna rozložení"
+  "Use for all layouts": "Použít pro všechna rozložení",
+  "Own colour": "Vlastní barva",
+  "Set colour": "Nastavit barvu",
+  "Escape": "Escape",
+  "Text": "Text",
+  "Icon": "Ikona",
+  "Font": "Písmo",
+  "Dim after (s)": "Ztlumit po (s)",
+  "Save look": "Uložit vzhled",
+  "Icon instead of text": "Ikona místo textu",
+  "One Nerd Font glyph": "Jeden znak z Nerd Fontu",
+  "Check the Escape text or icon, the font and the dimming time.": "Zkontroluj text nebo ikonu Escape, písmo a dobu ztlumení.",
+  "An icon is one glyph on a button or layout switch.": "Ikona je jeden znak a jde nastavit jen tlačítku nebo přepínači rozložení."
 }
