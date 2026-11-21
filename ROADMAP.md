@@ -175,7 +175,8 @@ novou připnutou revizi v `install-glance.sh`):
   nevrátí.
 - [x] `tbar 0.1.0-12` umí tyto volby zapsat do scény (`screensaver`,
   `screensaverStyle`, `screensaverText`, `screensaverImage`,
-  `backgroundImage`); původní renderer je ignoruje.
+  `backgroundImage`); původní renderer je ignoruje. Na testovaném stroji mají
+  všechny scény spořič `matrix` po 120 s; přepínání scén s ním funguje.
 - [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Animované
   pozadí pod tlačítky a různé barvy tlačítek zatím nejsou ani v soukromé
   kopii.
