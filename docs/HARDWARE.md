@@ -158,16 +158,18 @@ počítá podle Hyprlandu (ten Touch Bar jako monitor nevede):
 
 ```lua
 o.bind("switch:on:Lid Switch", nil,
-  [==[[ "$(hyprctl monitors all -j | jq '[.[] | select(.name | test("^(eDP|LVDS|DSI)-") | not)] | length')" = 0 ] && { omarchy-system-lock; sleep 1; omarchy-brightness-display off; omarchy-brightness-keyboard --no-osd off; }]==],
+  [==[logger -t mbp-lid "closed"; [ "$(hyprctl monitors all -j | jq '[.[] | select(.name | test("^(eDP|LVDS|DSI)-") | not)] | length')" = 0 ] && { omarchy-brightness-display off; omarchy-brightness-keyboard --no-osd off; omarchy-system-lock; sleep 1; omarchy-hw-laptop-closed && omarchy-brightness-display off; logger -t mbp-lid "display off done"; }]==],
   { locked = true })
 o.bind("switch:off:Lid Switch", nil,
-  "omarchy-brightness-display on; omarchy-brightness-keyboard --no-osd restore",
+  [[logger -t mbp-lid "opened"; omarchy-brightness-display on; omarchy-brightness-keyboard --no-osd restore]],
   { locked = true })
 ```
 
-Nasazeno 2026-11-21 (Hyprland 0.56.2): konfigurace se načetla bez chyb a
-samotné zhasnutí a rozsvícení displeje příkazem bylo ověřeno; **zavřením víka
-zatím nepotvrzeno**. Touch Bar zůstává svítit.
+Stav 2026-11-21 (Hyprland 0.56.2, Omarchy 4.5.0): při zavření víka na 26 s se
+vazba podle logu (`journalctl -t mbp-lid`) spustila a displej zhasla, po
+otevření ho rozsvítila a **uživatel potvrdil zamykací obrazovku**. Že displej
+pod víkem opravdu nesvítil, uživatel pohledem nepotvrdil. Touch Bar zůstává
+svítit. Víko zavřené jen asi na vteřinu nestačí poznat rozdíl.
 
 **Hibernace se neobnovila** (zkouška 2026-11-21, jádro `7.2.15-1-omarchy`,
 systemd 262): `systemctl hibernate` obraz uložil a počítač se vypnul

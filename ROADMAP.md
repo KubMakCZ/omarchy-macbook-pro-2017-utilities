@@ -120,7 +120,9 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   `setup.sh --no-suspend`, od 2026-11-21 pokrývá i vybitou baterii; uživatel
   ho spustil 2026-11-21. Hibernace se tentýž den při zkoušce neobnovila
   (první start se zasekl), na víko proto nastavena není; víko teď zamyká a
-  zhasíná displej přes vazbu v Hyprlandu, což uživatel ještě musí potvrdit.
+  zhasíná displej přes vazbu v Hyprlandu (zamknutí uživatel potvrdil, zhasnutí
+  je doloženo jen logem). Omarchy samo nereaguje, protože Touch Bar pokládá
+  za externí monitor; zvážit hlášení upstreamu a instalační krok pro vazbu.
   Zbývá: zjistit příčinu neobnovení hibernace, rozhodnout chování UPower při
   vybité baterii (hibernace, nebo vypnutí) a případně zkusit `s2idle`. Hibernaci a `s2idle` zkoušet pouze po
   domluvě a záloze; vyřešit i vypnutí displeje při zavřeném víku.
