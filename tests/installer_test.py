@@ -106,6 +106,13 @@ exit 0
     no_suspend()
     assert "HandleLidSwitch=ignore" in logind_file.read_text()
     assert "AllowSuspend=no" in sleep_file.read_text()
+    upower_file = fake_root / "etc/UPower/UPower.conf.d/60-omarchy-mbp-no-suspend.conf"
+    assert "CriticalPowerAction=PowerOff" in upower_file.read_text()
+    assert "try-restart upower.service" in (home / "systemctl.log").read_text()
+    # An installation from before the UPower file is completed by a rerun.
+    upower_file.unlink()
+    no_suspend()
+    assert upower_file.exists()
     assert "mask suspend.target" in (home / "systemctl.log").read_text()
     sleep_file.write_text("[Sleep]\nAllowSuspend=yes\n")
     no_suspend(expected=1)
@@ -113,7 +120,7 @@ exit 0
     assert sleep_file.read_text() == "[Sleep]\nAllowSuspend=yes\n" and logind_file.exists()
     sleep_file.unlink()
     no_suspend("--remove")
-    assert not logind_file.exists()
+    assert not logind_file.exists() and not upower_file.exists()
     assert "unmask suspend.target" in (home / "systemctl.log").read_text()
     unit = fake_root / "etc/systemd/system/suspend.target"
     unit.parent.mkdir(parents=True)

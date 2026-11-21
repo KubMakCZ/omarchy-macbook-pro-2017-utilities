@@ -139,9 +139,11 @@ konfiguraci nepřepíše.
 
 Druhý soubor řeší vybitou baterii: 2026-11-20 počítač nezamrzl kvůli víku, ale
 protože UPower při téměř vybité baterii sám vyžádal `suspend-then-hibernate`
-(log: `PM: suspend entry (deep)` bez probuzení). Bez nabídky uspání má UPower
-zvolit hibernaci nebo vypnutí; **toto chování při vybité baterii zatím nebylo
-na stroji ověřeno**. Návrat:
+(log: `PM: suspend entry (deep)` bez probuzení). Třetí soubor,
+`/etc/UPower/UPower.conf.d/60-omarchy-mbp-no-suspend.conf`, proto UPower
+nastaví `CriticalPowerAction=PowerOff`: při téměř vybité baterii se počítač
+čistě vypne. **Skutečné vybití baterie zatím nebylo na stroji vyzkoušeno.**
+Návrat:
 
 ```bash
 bash setup.sh --suspend-restore
@@ -176,8 +178,7 @@ systemd 262): `systemctl hibernate` obraz uložil a počítač se vypnul
 (`PM: hibernation: hibernation entry`), ale první zapnutí se zaseklo a až
 vynucený restart naběhl jako čistý start bez obnovení relace. Příčina není
 určena; jde o jediný pokus. Na zavření víka proto hibernace nastavena není.
-Pozor: s ochranou výše UPower při téměř vybité baterii nejspíš zvolí právě
-hibernaci, takže následný start může potřebovat jeden restart navíc.
+Ochrana výše proto při téměř vybité baterii počítač vypíná, nehibernuje.
 
 Neověřená možnost k budoucímu vyzkoušení je mělčí režim `s2idle`. Zkoušej ho
 jen s uloženou prací a zálohou.

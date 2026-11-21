@@ -17,6 +17,7 @@ fi
 
 logind_config="$root/etc/systemd/logind.conf.d/60-omarchy-mbp-no-suspend.conf"
 sleep_config="$root/etc/systemd/sleep.conf.d/60-omarchy-mbp-no-suspend.conf"
+upower_config="$root/etc/UPower/UPower.conf.d/60-omarchy-mbp-no-suspend.conf"
 targets=(suspend.target suspend-then-hibernate.target hybrid-sleep.target)
 temp="$(mktemp -d)"
 trap 'rm -rf -- "$temp"' EXIT
@@ -32,15 +33,22 @@ HandleSuspendKey=ignore
 CONFIG
 cat > "$temp/sleep" <<'CONFIG'
 # Nainstaloval omarchy-macbook-pro-2017-utilities (install-no-suspend.sh).
-# Systém uspání do RAM vůbec nenabízí, takže ho nezvolí ani UPower při téměř
-# vybité baterii (použije hibernaci nebo vypnutí) ani nabídka či nečinnost.
+# Systém uspání do RAM vůbec nenabízí, takže ho nezvolí UPower, nabídka ani
+# nečinnost.
 [Sleep]
 AllowSuspend=no
 AllowSuspendThenHibernate=no
 AllowHybridSleep=no
 CONFIG
+cat > "$temp/upower" <<'CONFIG'
+# Nainstaloval omarchy-macbook-pro-2017-utilities (install-no-suspend.sh).
+# Při téměř vybité baterii se počítač čistě vypne: z uspání se neprobudí
+# a z hibernace se při zkoušce 2026-11-21 neobnovil.
+[UPower]
+CriticalPowerAction=PowerOff
+CONFIG
 
-for name in logind sleep; do
+for name in logind sleep upower; do
   config="${name}_config"
   if [[ -L "${!config}" ]] || { [[ -e "${!config}" ]] && ! cmp -s -- "$temp/$name" "${!config}"; }; then
     echo "Soubor ${!config} již existuje a liší se; nic nebylo změněno." >&2
@@ -59,20 +67,23 @@ case "${1:-}" in
   "")
     install -D -m 644 -- "$temp/logind" "$logind_config"
     install -D -m 644 -- "$temp/sleep" "$sleep_config"
+    install -D -m 644 -- "$temp/upower" "$upower_config"
     systemctl mask "${targets[@]}"
     systemctl reload systemd-logind.service
+    systemctl try-restart upower.service
     echo "Uspání do RAM je vypnuté; zavření víka počítač neuspí."
-    echo "Při téměř vybité baterii systém místo uspání hibernuje nebo se vypne."
+    echo "Při téměř vybité baterii se počítač vypne."
     echo "Displej může pod zavřeným víkem zůstat zapnutý: před zavřením zamkni nebo vypni počítač."
     ;;
   --remove)
-    if [[ ! -e "$logind_config" && ! -e "$sleep_config" ]]; then
+    if [[ ! -e "$logind_config" && ! -e "$sleep_config" && ! -e "$upower_config" ]]; then
       echo "Konfigurace není nainstalovaná; nic nebylo změněno." >&2
       exit 1
     fi
-    rm -f -- "$logind_config" "$sleep_config"
+    rm -f -- "$logind_config" "$sleep_config" "$upower_config"
     systemctl unmask "${targets[@]}"
     systemctl reload systemd-logind.service
+    systemctl try-restart upower.service
     echo "Původní chování uspání je obnoveno."
     ;;
   *)
