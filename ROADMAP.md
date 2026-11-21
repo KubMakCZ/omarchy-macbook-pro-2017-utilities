@@ -189,7 +189,7 @@ novou připnutou revizi v `install-glance.sh`):
   náhledem a testy rendereru, `tbar 0.1.0-15` je umí zapsat. Na testovaném
   stroji mají všechny scény zaoblení 14, krytí 85 % a vlny; při animaci bral
   renderer asi 0,2 % a ovladač `t1-touchbar-hw` asi 1,4 % jednoho jádra.
-  Vzhled na panelu uživatel ještě nepotvrdil, vliv na baterii změřen není.
+  Uživatel vzhled na panelu potvrdil; vliv na baterii změřen není.
 - [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Různé barvy
   jednotlivých tlačítek zatím nejsou ani v soukromé kopii.
 - [x] Technická proveditelnost (čteno ze zdroje, potvrzeno zkouškou výše): renderer kreslí
