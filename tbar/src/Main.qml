@@ -126,6 +126,29 @@ ApplicationWindow {
                     onClicked: backend.setThemeStyle(themeStyle.chosen, true)
                 }
             }
+            Flow {
+                visible: themeStyle.own
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: ["#cba6f7", "#b4befe", "#89b4fa", "#74c7ec", "#94e2d5", "#a6e3a1", "#f9e2af",
+                            "#fab387", "#f38ba8", "#f5c2e7", "#ffffff", "#9399b2", "#45475a", "#7c3aed",
+                            "#2563eb", "#059669", "#dc2626"]
+                    Rectangle {
+                        required property string modelData
+                        width: 34
+                        height: 34
+                        radius: 4
+                        color: modelData
+                        border.width: backend.themeStyle === modelData ? 3 : 1
+                        border.color: backend.themeStyle === modelData ? "#ffffff" : "#555555"
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: backend.setThemeStyle(parent.modelData, false)
+                        }
+                    }
+                }
+            }
             RowLayout {
                 Label { text: qsTr("Escape") }
                 TextField {
@@ -141,7 +164,9 @@ ApplicationWindow {
                     maximumLength: 4
                     placeholderText: qsTr("Icon")
                     text: backend.look.escIcon
+                    font.family: "JetBrainsMono Nerd Font"
                 }
+                ToolButton { text: "…"; onClicked: iconPicker.pick(escIcon) }
                 Label { text: qsTr("Font") }
                 TextField {
                     id: lookFont
@@ -451,8 +476,49 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         maximumLength: 4
                         placeholderText: qsTr("One Nerd Font glyph")
+                        font.family: "JetBrainsMono Nerd Font"
+                    }
+                    ToolButton { text: "…"; onClicked: iconPicker.pick(itemIcon) }
+                }
+            }
+        }
+    }
+    Popup {
+        id: iconPicker
+        objectName: "iconPicker"
+        anchors.centerIn: Overlay.overlay
+        modal: true
+        padding: 12
+        background: Rectangle { color: "#202020"; border.color: "#555555"; radius: 6 }
+        property var target: null
+        function pick(field) { target = field; open() }
+        ColumnLayout {
+            Label { text: qsTr("Choose an icon"); font.bold: true }
+            GridLayout {
+                columns: 12
+                rowSpacing: 2
+                columnSpacing: 2
+                Repeater {
+                    model: ["\uf303", "\uf17c", "\uf120", "\uf121", "\uf023", "\uf09c", "\uf011", "\uf015", "\uf002", "\uf013", "\uf0c9", "\uf07b", "\uf0ac", "\uf269", "\uf268", "\uf09b", "\uf0e0", "\uf1d8", "\uf0f3", "\uf005", "\uf004", "\uf0e7", "\uf06e", "\uf02d", "\uf001", "\uf04b", "\uf04c", "\uf04d", "\uf048", "\uf051", "\uf028", "\uf027", "\uf026", "\uf130", "\uf030", "\uf03e", "\uf008", "\uf185", "\uf186", "\uf108", "\uf109", "\uf11c", "\uf1eb", "\uf240", "\uf019", "\uf093", "\uf0c5", "\uf0c4", "\uf0ea", "\uf044", "\uf1f8", "\uf021", "\uf0ec", "\uf060", "\uf061", "\uf062", "\uf063", "\uf067", "\uf068", "\uf00c", "\uf00d", "\uf128"]
+                    ToolButton {
+                        required property string modelData
+                        text: modelData
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 22
+                        implicitWidth: 42
+                        implicitHeight: 42
+                        onClicked: { iconPicker.target.text = modelData; iconPicker.close() }
                     }
                 }
+            }
+            RowLayout {
+                Label {
+                    text: qsTr("More glyphs: copy one from nerdfonts.com/cheat-sheet into the field.")
+                    wrapMode: Text.Wrap
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 420
+                }
+                Button { text: qsTr("No icon"); onClicked: { iconPicker.target.text = ""; iconPicker.close() } }
             }
         }
     }

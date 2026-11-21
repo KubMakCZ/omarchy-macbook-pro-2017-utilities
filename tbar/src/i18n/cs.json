@@ -134,5 +134,8 @@
   "Icon instead of text": "Ikona místo textu",
   "One Nerd Font glyph": "Jeden znak z Nerd Fontu",
   "Check the Escape text or icon, the font and the dimming time.": "Zkontroluj text nebo ikonu Escape, písmo a dobu ztlumení.",
-  "An icon is one glyph on a button or layout switch.": "Ikona je jeden znak a jde nastavit jen tlačítku nebo přepínači rozložení."
+  "An icon is one glyph on a button or layout switch.": "Ikona je jeden znak a jde nastavit jen tlačítku nebo přepínači rozložení.",
+  "Choose an icon": "Vyber ikonu",
+  "More glyphs: copy one from nerdfonts.com/cheat-sheet into the field.": "Další znaky: zkopíruj je z nerdfonts.com/cheat-sheet do pole.",
+  "No icon": "Bez ikony"
 }

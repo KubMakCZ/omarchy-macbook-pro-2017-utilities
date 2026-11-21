@@ -140,8 +140,10 @@ barva se s tématem nemění.
 Řádek „Escape“ změní vzhled celé scény: vlastní text nebo ikonu klávesy Esc
 (dál posílá Escape), písmo lišty a dobu nečinnosti, po které lišta ztmavne na
 čtvrtinu jasu (0 = nikdy). U tlačítka a přepínače rozložení jde v „Upravit“
-zadat „Ikona místo textu“. Ikona je jeden znak z Nerd Fontu; znak zkopíruj
+zadat „Ikona místo textu“. Ikona je jeden znak z Nerd Fontu: tlačítko „…“
+vedle pole otevře výběr asi šedesáti běžných ikon, jiný znak zkopíruj
 z přehledu na [nerdfonts.com/cheat-sheet](https://www.nerdfonts.com/cheat-sheet).
+U „Vlastní barvy“ jsou pod nabídkou barevné čtverečky pro rychlou volbu.
 Obrázky PNG, různé barvy jednotlivých tlačítek a animace renderer neumí.
 Vlastní barvu a Esc s ikonou uživatel potvrdil na panelu MacBookPro14,2 dne
 2026-11-21 (`tbar 0.1.0-10`); ikony tlačítek, písmo a ztlumení prošly jen
