@@ -149,8 +149,10 @@ bash setup.sh --suspend-restore
 
 Důsledky: zavřený notebook dál běží a vybíjí baterii a displej může pod víkem
 zůstat zapnutý, proto před zavřením zamkni obrazovku nebo počítač vypni.
-Skript prošel testy, ale **na skutečném stroji zatím nebyl potvrzen**; po
-instalaci ověř zavřením víka s uloženou prací.
+Na testovaném stroji je skript nainstalován od 2026-11-21 (systemd 262):
+logind poté hlásí `CanSuspend=no`, `CanHibernate=yes` a zavření víka
+`ignore`. **Samotné zavření víka uživatel zatím nepotvrdil**; po instalaci ho
+ověř s uloženou prací.
 
 Neověřené možnosti k budoucímu vyzkoušení: hibernace (Omarchy ji umí nastavit
 příkazem `omarchy hibernation`; při probuzení se hardware inicializuje jako
