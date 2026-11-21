@@ -186,8 +186,10 @@ novou připnutou revizi v `install-glance.sh`):
   Uživatel potvrdil, že tlačítka na panelu spouštějí jednotlivé animace.
 - [x] Soukromá kopie má od 2026-11-21 zaoblená tlačítka (`keyRadius`), krytí
   tlačítek (`keyOpacity`) a animaci pod tlačítky (`backgroundStyle`); ověřeno
-  náhledem a testy rendereru, `tbar 0.1.0-15` je umí zapsat. Na panelu
-  nepotvrzeno, zátěž animace pod tlačítky nezměřena.
+  náhledem a testy rendereru, `tbar 0.1.0-15` je umí zapsat. Na testovaném
+  stroji mají všechny scény zaoblení 14, krytí 85 % a vlny; při animaci bral
+  renderer asi 0,2 % a ovladač `t1-touchbar-hw` asi 1,4 % jednoho jádra.
+  Vzhled na panelu uživatel ještě nepotvrdil, vliv na baterii změřen není.
 - [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Různé barvy
   jednotlivých tlačítek zatím nejsou ani v soukromé kopii.
 - [x] Technická proveditelnost (čteno ze zdroje, potvrzeno zkouškou výše): renderer kreslí
