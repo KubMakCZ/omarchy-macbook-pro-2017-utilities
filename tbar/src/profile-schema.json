@@ -19,6 +19,8 @@
     "backgroundStyle": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,23}$"},
     "keyRadius": {"type": "integer", "minimum": 0, "maximum": 26},
     "keyOpacity": {"type": "integer", "minimum": 10, "maximum": 100},
+    "keyBorder": {"type": "integer", "minimum": 0, "maximum": 3},
+    "keyShadow": {"type": "integer", "minimum": 0, "maximum": 4},
     "backgroundImage": {"type": "string", "maxLength": 512, "pattern": "^/[^\\u0000-\\u001f\\u007f-\\u009f]*\\.[pP][nN][gG]$"},
     "apps": {"type": "array", "maxItems": 8, "items": {"type": "string", "pattern": "^[A-Za-z0-9._+-]{1,64}$"}},
     "buttons": {

@@ -63,7 +63,8 @@ public:
     Q_INVOKABLE bool setApps(const QString &list);
     Q_INVOKABLE bool setLook(const QString &escLabel, const QString &escIcon, const QString &font, int idleDim);
     Q_INVOKABLE bool setItemIcon(int index, const QString &icon);
-    Q_INVOKABLE bool setKeys(int radius, int opacity, const QString &animation, bool everywhere);
+    Q_INVOKABLE bool setKeys(int radius, int opacity, const QString &animation, int border, int shadow,
+                             bool everywhere);
     Q_INVOKABLE bool setSaver(int seconds, const QString &style, const QString &text, const QString &image,
                               const QString &background, bool everywhere);
     Q_INVOKABLE bool editItem(int index, const QString &section, int width,

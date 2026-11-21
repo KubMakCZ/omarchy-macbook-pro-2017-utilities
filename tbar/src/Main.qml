@@ -228,6 +228,12 @@ ApplicationWindow {
                 SpinBox { id: keyRadius; from: 0; to: 26; stepSize: 2; editable: true; value: backend.keys.radius }
                 Label { text: qsTr("Key opacity (%)") }
                 SpinBox { id: keyOpacity; from: 10; to: 100; stepSize: 5; editable: true; value: backend.keys.opacity }
+                Label { text: qsTr("Outline") }
+                SpinBox { id: keyBorder; from: 0; to: 3; editable: true; value: backend.keys.border }
+                Label { text: qsTr("Shadow") }
+                SpinBox { id: keyShadow; from: 0; to: 4; editable: true; value: backend.keys.shadow }
+            }
+            RowLayout {
                 Label { text: qsTr("Animation behind keys") }
                 ComboBox {
                     id: keyAnimation
@@ -241,18 +247,22 @@ ApplicationWindow {
                     text: qsTr("Save")
                     objectName: "saveKeys"
                     onClicked: backend.setKeys(keyRadius.value, keyOpacity.value,
-                                               keyAnimation.styles[keyAnimation.currentIndex], false)
+                                               keyAnimation.styles[keyAnimation.currentIndex],
+                                               keyBorder.value, keyShadow.value, false)
                 }
                 Button {
                     text: qsTr("Use for all layouts")
                     onClicked: backend.setKeys(keyRadius.value, keyOpacity.value,
-                                               keyAnimation.styles[keyAnimation.currentIndex], true)
+                                               keyAnimation.styles[keyAnimation.currentIndex],
+                                               keyBorder.value, keyShadow.value, true)
                 }
                 Connections {
                     target: backend
                     function onChanged() {
                         keyRadius.value = backend.keys.radius
                         keyOpacity.value = backend.keys.opacity
+                        keyBorder.value = backend.keys.border
+                        keyShadow.value = backend.keys.shadow
                         keyAnimation.currentIndex = Math.max(0, keyAnimation.styles.indexOf(backend.keys.animation))
                     }
                 }

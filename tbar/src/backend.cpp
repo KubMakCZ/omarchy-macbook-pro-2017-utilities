@@ -370,7 +370,8 @@ QJsonObject Backend::profile(const QString &name) const {
 QString Backend::validateProfile(const QJsonObject &profile) {
     const QStringList profileKeys{"name", "theme", "apps", "buttons", "escLabel", "escIcon", "font", "idleDim",
                                   "screensaver", "screensaverStyle", "screensaverText", "screensaverImage",
-                                  "backgroundImage", "backgroundStyle", "keyRadius", "keyOpacity"};
+                                  "backgroundImage", "backgroundStyle", "keyRadius", "keyOpacity",
+                                  "keyBorder", "keyShadow"};
     for (auto it = profile.begin(); it != profile.end(); ++it)
         if (!profileKeys.contains(it.key())) return "Unknown profile field: " + it.key();
     if (!profile.value("name").isString() || profile.value("name").toString().trimmed().isEmpty()
@@ -398,7 +399,8 @@ QString Backend::validateProfile(const QJsonObject &profile) {
     if (profile.contains("backgroundStyle")
         && !QRegularExpression("^[a-z][a-z0-9-]{0,23}$").match(profile.value("backgroundStyle").toString()).hasMatch())
         return "backgroundStyle must be a lower-case animation name such as waves or stars";
-    const QList<QPair<QString, QPair<int, int>>> ranges{{"keyRadius", {0, 26}}, {"keyOpacity", {10, 100}}};
+    const QList<QPair<QString, QPair<int, int>>> ranges{{"keyRadius", {0, 26}}, {"keyOpacity", {10, 100}},
+                                                          {"keyBorder", {0, 3}}, {"keyShadow", {0, 4}}};
     for (const auto &range : ranges) {
         const QJsonValue number = profile.value(range.first);
         if (profile.contains(range.first) && (!number.isDouble() || number.toDouble() != number.toInt()
@@ -712,10 +714,11 @@ QVariantMap Backend::keys() const {
     if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
     const QJsonObject scene = m_profiles[m_selected].toObject();
     return {{"radius", scene.value("keyRadius").toInt()}, {"opacity", scene.value("keyOpacity").toInt(100)},
-            {"animation", scene.value("backgroundStyle").toString()}};
+            {"animation", scene.value("backgroundStyle").toString()},
+            {"border", scene.value("keyBorder").toInt()}, {"shadow", scene.value("keyShadow").toInt()}};
 }
 
-bool Backend::setKeys(int radius, int opacity, const QString &animation, bool everywhere) {
+bool Backend::setKeys(int radius, int opacity, const QString &animation, int border, int shadow, bool everywhere) {
     if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
     QJsonArray updated = m_profiles;
     for (int index = 0; index < updated.size(); ++index) {
@@ -725,10 +728,14 @@ bool Backend::setKeys(int radius, int opacity, const QString &animation, bool ev
         else scene.remove("keyRadius");
         if (opacity < 100) scene.insert("keyOpacity", opacity);
         else scene.remove("keyOpacity");
+        if (border > 0) scene.insert("keyBorder", border);
+        else scene.remove("keyBorder");
+        if (shadow > 0) scene.insert("keyShadow", shadow);
+        else scene.remove("keyShadow");
         if (animation.isEmpty()) scene.remove("backgroundStyle");
         else scene.insert("backgroundStyle", animation);
         if (!validateProfile(scene).isEmpty())
-            return fail(tr("Check the corner radius (0-26), the opacity (10-100 %) and the animation."));
+            return fail(tr("Check the corner radius (0-26), opacity (10-100 %), outline (0-3), shadow (0-4) and the animation."));
         updated[index] = scene;
     }
     return save(updated, m_selected, everywhere);
@@ -966,6 +973,8 @@ QJsonObject Backend::rendererConfig() const {
     if (scene.contains("backgroundStyle")) result.insert("backgroundStyle", scene.value("backgroundStyle"));
     if (scene.contains("keyRadius")) result.insert("keyRadius", scene.value("keyRadius"));
     if (scene.contains("keyOpacity")) result.insert("keyOpacity", scene.value("keyOpacity").toInt() / 100.0);
+    if (scene.contains("keyBorder")) result.insert("keyBorder", scene.value("keyBorder"));
+    if (scene.contains("keyShadow")) result.insert("keyShadow", scene.value("keyShadow"));
     if (!themeStyle().isEmpty()) {
         result.insert("tbar", QJsonObject{{"theme", themeStyle()}});
         result.insert("colors", themeColors(themeStyle()));
