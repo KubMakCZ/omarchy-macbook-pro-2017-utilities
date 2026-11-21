@@ -192,7 +192,8 @@ novou připnutou revizi v `install-glance.sh`):
   Uživatel vzhled na panelu potvrdil; vliv na baterii změřen není.
 - [x] Soukromá kopie má obrys (`keyBorder`) a stín tlačítek (`keyShadow`,
   stisknuté tlačítko na něj klesne), 2026-11-21; ověřeno náhledem a testy
-  rendereru, `tbar 0.1.0-16` je umí zapsat.
+  rendereru, `tbar 0.1.0-16` je umí zapsat. Testovaný stroj má ve všech
+  scénách obrys 1 a stín 3; na panelu uživatel ještě nepotvrdil.
 - [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Různé barvy
   jednotlivých tlačítek zatím nejsou ani v soukromé kopii.
 - [x] Technická proveditelnost (čteno ze zdroje, potvrzeno zkouškou výše): renderer kreslí
