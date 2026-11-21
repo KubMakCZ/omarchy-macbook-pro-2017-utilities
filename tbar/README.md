@@ -251,8 +251,9 @@ stroji Touch Bar používá T1Bridge DKMS; při původní kontrole byl zvukový 
 mimo správu balíčků. Aktualizace může funkce rozbít. Návod na
 [instalaci stacku](../docs/INSTALL.md) není zatím ověřen na čistém systému.
 
-Přepínání scén, automatika podle aplikace a ovládací tlačítka prošly testy
-a náhledem rendereru (2026-11-21), **na fyzickém panelu zatím potvrzeny
-nejsou**. Posuvníky, GIFy, libovolný počet prvků a vlastní grafické ikony
+Ovládací tlačítka (hlasitost, jas, podsvícení klávesnice, média) a tlačítko
+další scény uživatel potvrdil na panelu MacBookPro14,2 dne 2026-11-21
+(`tbar 0.1.0-8`). Automatika podle aplikace a tlačítko mikrofonu prošly jen
+testy, **na panelu potvrzeny nejsou**. Posuvníky, GIFy, libovolný počet prvků a vlastní grafické ikony
 nejsou implementovány.
 Budoucí úpravy OpenCore jsou samostatný úkol; tento projekt bootloader nemění.

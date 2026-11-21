@@ -19,8 +19,8 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-8` (přepínání scén, ovládací tlačítka, automatika podle aplikace); tento
-  balíček zatím nebyl nainstalován.
+- Zdroj `tbar` v repozitáři je `0.1.0-8` (přepínání scén, ovládací tlačítka, automatika podle aplikace); nainstalován
+  2026-11-21.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
 - Jde jen o stavové pozorování v daném okamžiku. Aktivní služba sama o sobě
@@ -83,16 +83,17 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 ## Touch Bar: požadované nápady
 
 - [x] Přepínání scén přímo na Touch Baru tlačítkem (`scene`, `scene-next`,
-  `tbar next`), implementováno 2026-11-21 v `tbar 0.1.0-8`; prošly testy,
-  **na panelu nepotvrzeno**. Zbývá: výběr ze seznamu a automatické tlačítko
+  `tbar next`), implementováno 2026-11-21 v `tbar 0.1.0-8`; uživatel tentýž
+  den potvrdil funkci tlačítek scény „Ovladani“ na panelu. Zbývá: výběr ze seznamu a automatické tlačítko
   zpět.
 - [x] Volitelné automatické přepínání podle aktivní aplikace (`apps`,
   `tbar-watch.service`), implementováno 2026-11-21; prošly testy s napodobeným
   Hyprlandem, **na skutečném stroji nepotvrzeno**. Zbývá ověřit chování po
   restartu a při zamčené obrazovce.
 - [x] Ovládání hlasitosti, jasu displeje, podsvícení klávesnice, médií a
-  mikrofonu jako hotové skupiny tlačítek (`control`), 2026-11-21; náhled
-  rendereru ověřen, **na panelu nepotvrzeno**. Posuvník jako v macOS renderer
+  mikrofonu jako hotové skupiny tlačítek (`control`), 2026-11-21; hlasitost,
+  jas, podsvícení klávesnice a média uživatel potvrdil na panelu, mikrofon
+  ve scéně nebyl. Posuvník jako v macOS renderer
   neumí; vyžadoval by změnu rendereru.
 - [ ] Podpora scén pro programování, grafiku a tvorbu obsahu. Uživatel
   zmiňoval ovládání podobné Macro Deck / Touch Portal: více či méně vlastních
