@@ -136,7 +136,8 @@ novou připnutou revizi v `install-glance.sh`):
   Nerd Fontu) na tlačítkách a přepínačích scén, písmo lišty a ztlumení po
   nečinnosti: `tbar 0.1.0-10` (2026-11-21). Prošly testy a náhled rendereru;
   na testovaném stroji mají všechny scény barvu `#cba6f7` a ikonu Esc a
-  renderer je načetl, **uživatel vzhled na panelu ještě nepotvrdil**. Zbývá pohodlný výběr ikon a barvy v GUI (dnes se
+  uživatel potvrdil, že Esc s ikonou na panelu funguje. Ikony na tlačítkách,
+  písmo a ztlumení na panelu potvrzeny nejsou. Zbývá pohodlný výběr ikon a barvy v GUI (dnes se
   znak i kód barvy zadávají ručně).
 - [ ] Barva jednotlivých tlačítek: renderer má barvy jen pro celou lištu.
   Vyžaduje zásah do rendereru.

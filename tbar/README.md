@@ -142,7 +142,10 @@ barva se s tématem nemění.
 čtvrtinu jasu (0 = nikdy). U tlačítka a přepínače rozložení jde v „Upravit“
 zadat „Ikona místo textu“. Ikona je jeden znak z Nerd Fontu; znak zkopíruj
 z přehledu na [nerdfonts.com/cheat-sheet](https://www.nerdfonts.com/cheat-sheet).
-Obrázky PNG, různé barvy jednotlivých tlačítek a animace renderer neumí. Grafy používají
+Obrázky PNG, různé barvy jednotlivých tlačítek a animace renderer neumí.
+Vlastní barvu a Esc s ikonou uživatel potvrdil na panelu MacBookPro14,2 dne
+2026-11-21 (`tbar 0.1.0-10`); ikony tlačítek, písmo a ztlumení prošly jen
+testy a náhledem. Grafy používají
 výchozí barvy tématu btop, které renderer průběžně sleduje. Automatická změna
 barev tlačítek vyžaduje nainstalovaný hook, není vázaná na otevřený editor.
 
