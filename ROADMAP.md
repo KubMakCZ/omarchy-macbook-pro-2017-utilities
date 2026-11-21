@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-10` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
+- Zdroj `tbar` v repozitáři je `0.1.0-11` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
   2026-11-21.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
@@ -137,8 +137,8 @@ novou připnutou revizi v `install-glance.sh`):
   nečinnosti: `tbar 0.1.0-10` (2026-11-21). Prošly testy a náhled rendereru;
   na testovaném stroji mají všechny scény barvu `#cba6f7` a ikonu Esc a
   uživatel potvrdil, že Esc s ikonou na panelu funguje. Ikony na tlačítkách,
-  písmo a ztlumení na panelu potvrzeny nejsou. Zbývá pohodlný výběr ikon a barvy v GUI (dnes se
-  znak i kód barvy zadávají ručně).
+  písmo a ztlumení na panelu potvrzeny nejsou. Výběr ikon a barevné čtverečky v GUI
+  přidal `tbar 0.1.0-11` (ověřeno náhledem okna).
 - [ ] Barva jednotlivých tlačítek: renderer má barvy jen pro celou lištu.
   Vyžaduje zásah do rendereru.
 - [ ] Obrázek PNG místo Esc nebo na tlačítku, obrázkové pozadí lišty a
