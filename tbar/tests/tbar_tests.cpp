@@ -400,7 +400,8 @@ void BackendTests::themedLayoutFollowsChangesSafely() {
     QVERIFY(!escKey.contains("label"));
     QVERIFY(model.setLook("", "", "", 0));
     QVERIFY(model.setThemeStyle("magenta", false));
-    QVERIFY(!model.setSaver(120, "plasma", "", "", "", false));
+    QVERIFY(!model.setSaver(120, "Not A Style", "", "", "", false));
+    QVERIFY(model.setSaver(120, "plasma", "", "", "", false));
     QVERIFY(!model.setSaver(120, "image", "", "relative.png", "", false));
     QVERIFY(!model.setSaver(120, "matrix", "", "", "/nonexistent/background.png", false));
     QVERIFY(model.setSaver(120, "text", "Ahoj", "", "", true));

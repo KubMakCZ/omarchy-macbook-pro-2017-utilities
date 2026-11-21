@@ -60,7 +60,8 @@ tbar was first used, and refuses if that layout was changed outside tbar.
 - `font`: font family for the whole bar, e.g. `"JetBrainsMono Nerd Font"`.
 - `idleDim`: seconds without a touch before the bar dims (0 or omitted: never).
 - Experimental, ignored by the stock omarchy-glance renderer: `screensaver`
-  (idle seconds, 0-3600), `screensaverStyle` (`matrix`, `text` or `image`),
+  (idle seconds, 0-3600), `screensaverStyle` (a lower-case style name the renderer knows, e.g.
+  `matrix`, `text`, `image`),
   `screensaverText` (1-32 characters), `screensaverImage` and
   `backgroundImage` (absolute paths to `.png` files). Ask the user whether
   their renderer supports them before relying on these.

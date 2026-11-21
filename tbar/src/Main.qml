@@ -198,8 +198,11 @@ ApplicationWindow {
                 SpinBox { id: saverSeconds; from: 0; to: 3600; stepSize: 30; editable: true; value: backend.saver.seconds }
                 ComboBox {
                     id: saverStyle
-                    readonly property var styles: ["matrix", "text", "image"]
-                    model: [qsTr("Running characters"), qsTr("Floating text"), qsTr("Floating image")]
+                    readonly property var styles: ["matrix", "text", "image", "scanner", "waves", "stars",
+                                                   "equalizer", "plasma", "pong"]
+                    model: [qsTr("Running characters"), qsTr("Floating text"), qsTr("Floating image"),
+                            qsTr("Scanner"), qsTr("Waves"), qsTr("Stars"), qsTr("Equalizer"),
+                            qsTr("Plasma"), qsTr("Pong")]
                     currentIndex: Math.max(0, styles.indexOf(backend.saver.style))
                 }
                 TextField {
@@ -218,7 +221,7 @@ ApplicationWindow {
                     placeholderText: qsTr("Path to a .png image")
                     text: backend.saver.image
                 }
-                Item { visible: saverStyle.currentIndex === 0; Layout.fillWidth: true }
+                Item { visible: saverStyle.currentIndex !== 1 && saverStyle.currentIndex !== 2; Layout.fillWidth: true }
             }
             RowLayout {
                 Label { text: qsTr("Bar background") }

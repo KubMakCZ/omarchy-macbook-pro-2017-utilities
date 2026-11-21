@@ -108,7 +108,10 @@ například `wtype -M ctrl t -m ctrl` pro nový panel prohlížeče nebo
 
 Řádky „Spořič po (s)“ a „Pozadí lišty“ zapisují do scény volby `screensaver`
 (sekundy nečinnosti, 0 = vypnuto), `screensaverStyle` (`matrix` běžící znaky,
-`text` plovoucí nápis, `image` plovoucí obrázek), `screensaverText`,
+`text` plovoucí nápis, `image` plovoucí obrázek; editor nabízí i `scanner`,
+`waves`, `stars`, `equalizer`, `plasma` a `pong` a formát přijme jakýkoli název
+stylu malými písmeny, neznámý styl renderer vykreslí jako `matrix`),
+`screensaverText`,
 `screensaverImage` a `backgroundImage` (absolutní cesty k souborům `.png`).
 Barva spořiče se bere z barev scény a mění se s tématem.
 

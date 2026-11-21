@@ -391,8 +391,8 @@ QString Backend::validateProfile(const QJsonObject &profile) {
         || profile.value("screensaver").toInt() < 0 || profile.value("screensaver").toInt() > 3600))
         return "screensaver must be an integer from 0 to 3600 seconds";
     if (profile.contains("screensaverStyle")
-        && !QStringList{"matrix", "text", "image"}.contains(profile.value("screensaverStyle").toString()))
-        return "screensaverStyle must be matrix, text or image";
+        && !QRegularExpression("^[a-z][a-z0-9-]{0,23}$").match(profile.value("screensaverStyle").toString()).hasMatch())
+        return "screensaverStyle must be a lower-case style name such as matrix, text or image";
     if (profile.contains("screensaverText") && !validText(profile.value("screensaverText"), 32))
         return "screensaverText must be a single line of 1-32 characters";
     for (const QString key : {"screensaverImage", "backgroundImage"})
