@@ -130,12 +130,15 @@ novou připnutou revizi v `install-glance.sh`):
   `blue`, `cyan`, `green`, `yellow`, `orange`, `red`) a volbu „Použít pro
   všechna rozložení“. Prošly testy a náhled rendereru s tématem Catppuccin;
   uživatel na panelu vyzkoušel `magenta` a `tinted`; `tinted` pak nahradil
-  pevnou fialovou. Automatická změna barev při přepnutí tématu ověřena není. Catppuccin
+  pevnou fialovou a později se sám vrátil k `tinted` s tématem Everforest.
+  Hook `tbar-theme-sync` při změně souboru tématu barvy přepsal v izolované
+  kopii konfigurace (2026-11-21); skutečné přepnutí skinu se změnou barev na
+  panelu uživatel ještě nepotvrdil. Catppuccin
   v Omarchy nemá fialovou (`accent` je modrá, `magenta` růžová).
 - [x] Vlastní barva `#rrggbb`, vlastní text nebo ikona Esc, ikony (glyfy
   Nerd Fontu) na tlačítkách a přepínačích scén, písmo lišty a ztlumení po
   nečinnosti: `tbar 0.1.0-10` (2026-11-21). Prošly testy a náhled rendereru;
-  na testovaném stroji mají všechny scény barvu `#cba6f7` a ikonu Esc a
+  na testovaném stroji měly všechny scény barvu `#cba6f7` a ikonu Esc a
   uživatel potvrdil, že Esc s ikonou na panelu funguje. Ikony na tlačítkách,
   písmo a ztlumení na panelu potvrzeny nejsou. Výběr ikon a barevné čtverečky v GUI
   přidal `tbar 0.1.0-11` (ověřeno náhledem okna).
