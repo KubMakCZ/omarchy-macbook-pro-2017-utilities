@@ -49,7 +49,11 @@ tbar was first used, and refuses if that layout was changed outside tbar.
 ```
 
 - `name`: 1-40 characters, no leading or trailing whitespace.
-- `theme`: omit it, or `"auto"` to colour buttons from the Omarchy theme.
+- `theme`: omit it for grey keys, or follow the current Omarchy theme (also a
+  custom one) with `"auto"` (subtle keys on a black bar), `"tinted"` (bar in
+  the theme background) or keys painted in a theme colour: `"accent"`,
+  `"magenta"`, `"blue"`, `"cyan"`, `"green"`, `"yellow"`, `"orange"`, `"red"`.
+  Colours are refreshed when the theme changes.
 - `apps`: optional, at most 8 Hyprland window classes (`A-Za-z0-9._+-`,
   case-insensitive, see `hyprctl activewindow`). While the user's
   `tbar-watch.service` runs, the scene is shown when such a window is focused

@@ -109,5 +109,18 @@
   "Enter at most 8 window classes separated by commas, e.g. firefox.": "Zadej nejvýše 8 tříd oken oddělených čárkami, např. firefox.",
   "Apply a layout once before switching layouts.": "Před přepínáním nejdřív jedno rozložení použij tlačítkem „Použít rozložení“.",
   "Layout applied, but its state could not be saved: %1": "Rozložení bylo použito, ale nepodařilo se uložit jeho stav: %1",
-  "Layout not found.": "Rozložení nebylo nalezeno."
+  "Layout not found.": "Rozložení nebylo nalezeno.",
+  "Colors": "Barvy",
+  "Default grey": "Výchozí šedá",
+  "Omarchy theme: subtle": "Téma Omarchy: nenápadné",
+  "Omarchy theme: tinted bar": "Téma Omarchy: obarvená lišta",
+  "Omarchy theme: accent keys": "Téma Omarchy: tlačítka v akcentu",
+  "Omarchy theme: magenta keys": "Téma Omarchy: purpurová tlačítka",
+  "Omarchy theme: blue keys": "Téma Omarchy: modrá tlačítka",
+  "Omarchy theme: cyan keys": "Téma Omarchy: tyrkysová tlačítka",
+  "Omarchy theme: green keys": "Téma Omarchy: zelená tlačítka",
+  "Omarchy theme: yellow keys": "Téma Omarchy: žlutá tlačítka",
+  "Omarchy theme: orange keys": "Téma Omarchy: oranžová tlačítka",
+  "Omarchy theme: red keys": "Téma Omarchy: červená tlačítka",
+  "Use for all layouts": "Použít pro všechna rozložení"
 }

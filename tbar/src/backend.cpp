@@ -25,15 +25,25 @@ const QStringList kinds{"button", "internet", "temperature", "process", "widget"
                         "control", "scene", "scene-next"};
 const QRegularExpression appClass("^[A-Za-z0-9._+-]{1,64}$");
 
-QJsonObject themeColors() {
+// Theme styles: "auto" keeps the bar black with subtle keys, "tinted" also
+// colours the bar, and the rest paint the keys in that colour of the theme.
+const QStringList vivid{"accent", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"};
+const QStringList themeStyles = QStringList{"auto", "tinted"} + vivid;
+
+QJsonObject themeColors(const QString &style) {
     const QString state = qEnvironmentVariable("XDG_STATE_HOME", QDir::homePath() + "/.local/state");
     QFile file(state + "/omarchy/current/theme/colors.toml");
     QJsonObject colors;
     if (!file.open(QIODevice::ReadOnly)) return colors;
     const QString text = QString::fromUtf8(file.readAll());
-    const QList<QPair<QString, QString>> keys{{"lighter_background", "key"},
-                                              {"accent", "keyPressed"},
-                                              {"foreground", "text"}, {"red", "urgent"}};
+    QList<QPair<QString, QString>> keys{{"lighter_background", "key"}, {"accent", "keyPressed"},
+                                        {"foreground", "text"}, {"red", "urgent"}};
+    if (style == "tinted")
+        keys = {{"background", "background"}, {"selection", "key"}, {"accent", "keyPressed"},
+                {"foreground", "text"}, {"red", "urgent"}};
+    else if (vivid.contains(style))
+        keys = {{"darker_background", "background"}, {style, "key"}, {"foreground", "keyPressed"},
+                {"darker_background", "text"}, {"red", "urgent"}};
     for (const auto &key : keys) {
         const QRegularExpression re("^\\s*" + key.first + "\\s*=\\s*[\"'](#[0-9a-fA-F]{6})[\"']",
                                     QRegularExpression::MultilineOption);
@@ -158,7 +168,7 @@ Backend::Backend(const QString &configHome, QObject *parent)
         const auto obj = item.toObject();
         if (!item.isObject() || obj.value("name").toString().trimmed().isEmpty()
             || !obj.value("buttons").isArray() || obj.value("buttons").toArray().size() > 12
-            || (obj.contains("theme") && obj.value("theme").toString() != "auto")
+            || (obj.contains("theme") && !themeStyles.contains(obj.value("theme").toString()))
             || (obj.contains("apps") && !obj.value("apps").isArray())) {
             m_message = tr("Profiles are invalid. The file was not changed.");
             return;
@@ -205,20 +215,26 @@ bool Backend::rendererAvailable() const {
     return !QStandardPaths::findExecutable("omarchy-glance").isEmpty();
 }
 
-bool Backend::themeAuto() const {
-    return m_selected >= 0 && m_selected < m_profiles.size()
-        && m_profiles[m_selected].toObject().value("theme").toString() == "auto";
+QString Backend::themeStyle() const {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
+    return m_profiles[m_selected].toObject().value("theme").toString();
 }
 
-bool Backend::setThemeAuto(bool enabled) {
-    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+bool Backend::setThemeStyle(const QString &style, bool everywhere) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()
+        || (!style.isEmpty() && !themeStyles.contains(style))) return false;
     QJsonArray updated = m_profiles;
-    QJsonObject profile = updated[m_selected].toObject();
-    if (enabled) profile.insert("theme", "auto");
-    else profile.remove("theme");
-    updated[m_selected] = profile;
-    return save(updated, m_selected);
+    for (int index = 0; index < updated.size(); ++index) {
+        if (!everywhere && index != m_selected) continue;
+        QJsonObject profile = updated[index].toObject();
+        if (style.isEmpty()) profile.remove("theme");
+        else profile.insert("theme", style);
+        updated[index] = profile;
+    }
+    return save(updated, m_selected, everywhere);
 }
+
+bool Backend::setThemeAuto(bool enabled) { return setThemeStyle(enabled ? "auto" : "", false); }
 
 void Backend::setPreviewFn(bool enabled) {
     if (m_previewFn == enabled) return;
@@ -325,8 +341,9 @@ QString Backend::validateProfile(const QJsonObject &profile) {
         || profile.value("name").toString().size() > 40
         || profile.value("name").toString() != profile.value("name").toString().trimmed())
         return "name must be a non-empty trimmed string of at most 40 characters";
-    if (profile.contains("theme") && profile.value("theme").toString() != "auto")
-        return "theme must be auto when present";
+    if (profile.contains("theme") && (!profile.value("theme").isString()
+        || !themeStyles.contains(profile.value("theme").toString())))
+        return "theme must be one of: " + themeStyles.join(", ");
     if (profile.contains("apps")) {
         if (!profile.value("apps").isArray() || profile.value("apps").toArray().size() > 8)
             return "apps must be an array of at most 8 window classes";
@@ -742,9 +759,9 @@ QJsonObject Backend::rendererConfig() const {
         {"default", QJsonObject{{"left", left}, {"center", center}, {"right", right}}},
         {"fn", QJsonObject{{"left", fn}}}
     }}};
-    if (themeAuto()) {
-        result.insert("tbar", QJsonObject{{"theme", "auto"}});
-        result.insert("colors", themeColors());
+    if (!themeStyle().isEmpty()) {
+        result.insert("tbar", QJsonObject{{"theme", themeStyle()}});
+        result.insert("colors", themeColors(themeStyle()));
     }
     return result;
 }
@@ -871,7 +888,8 @@ bool Backend::syncTheme() {
     QJsonParseError error;
     QJsonObject config = QJsonDocument::fromJson(data, &error).object();
     if (error.error != QJsonParseError::NoError) return fail(tr("The renderer configuration is invalid."));
-    if (config.value("tbar").toObject().value("theme").toString() != "auto") return true;
+    const QString style = config.value("tbar").toObject().value("theme").toString();
+    if (!themeStyles.contains(style)) return true;
     QFile snapshotFile(snapshotPath);
     if (!snapshotFile.open(QIODevice::ReadOnly)) return fail(tr("Could not read the original layout backup."));
     QJsonObject snapshot = QJsonDocument::fromJson(snapshotFile.readAll()).object();
@@ -879,7 +897,7 @@ bool Backend::syncTheme() {
     if (!validSnapshot(snapshot)) return fail(tr("The original layout backup is invalid."));
     if (snapshot.value("appliedSha256").toString().toLatin1() != hash(data))
         return fail(tr("The current layout changed outside this app; it was not overwritten."));
-    const QJsonObject colors = themeColors();
+    const QJsonObject colors = themeColors(style);
     if (colors.isEmpty()) return fail(tr("Could not read the Omarchy theme colors."));
     if (config.value("colors").toObject() == colors) return true;
     config.insert("colors", colors);

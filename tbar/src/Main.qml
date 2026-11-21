@@ -86,10 +86,26 @@ ApplicationWindow {
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
             }
-            CheckBox {
-                text: qsTr("Follow Omarchy theme for buttons")
-                checked: backend.themeAuto
-                onClicked: backend.setThemeAuto(checked)
+            RowLayout {
+                Label { text: qsTr("Colors") }
+                ComboBox {
+                    id: themeStyle
+                    objectName: "themeStyle"
+                    Layout.fillWidth: true
+                    readonly property var styles: ["", "auto", "tinted", "accent", "magenta", "blue",
+                                                   "cyan", "green", "yellow", "orange", "red"]
+                    model: [qsTr("Default grey"), qsTr("Omarchy theme: subtle"), qsTr("Omarchy theme: tinted bar"),
+                            qsTr("Omarchy theme: accent keys"), qsTr("Omarchy theme: magenta keys"),
+                            qsTr("Omarchy theme: blue keys"), qsTr("Omarchy theme: cyan keys"),
+                            qsTr("Omarchy theme: green keys"), qsTr("Omarchy theme: yellow keys"),
+                            qsTr("Omarchy theme: orange keys"), qsTr("Omarchy theme: red keys")]
+                    currentIndex: Math.max(0, styles.indexOf(backend.themeStyle))
+                    onActivated: function(index) { backend.setThemeStyle(styles[index], false) }
+                }
+                Button {
+                    text: qsTr("Use for all layouts")
+                    onClicked: backend.setThemeStyle(themeStyle.styles[themeStyle.currentIndex], true)
+                }
             }
             RowLayout {
                 Label { text: qsTr("Show for apps") }

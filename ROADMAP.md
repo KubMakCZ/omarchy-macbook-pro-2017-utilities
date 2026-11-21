@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-8` (přepínání scén, ovládací tlačítka, automatika podle aplikace); nainstalován
+- Zdroj `tbar` v repozitáři je `0.1.0-9` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev); nainstalován
   2026-11-21.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
@@ -125,12 +125,12 @@ novou připnutou revizi v `install-glance.sh`):
   tématu a hook `tbar-theme-sync` je při změně tématu přepíše. Funguje i pro
   vlastní téma, žádný zvláštní skript není potřeba. Uživatel ji ale ve svých
   scénách zatím zapnutou nemá.
-- [ ] Výraznější barvy z tématu (jen `tbar`). Dnes se bere `lighter_background`
-  na tlačítka, `accent` na stisk a `foreground` na text; u Catppuccinu to dává
-  tmavě břidlicová tlačítka, ne fialovou. Přidat volbu stylu, např. tlačítka
-  v barvě `accent` nebo `magenta` s tmavým textem, obarvené pozadí lišty
-  (`colors.background`) a ruční výběr barev ve scéně. Zvážit volbu „pro
-  všechny scény“ místo zapínání po jedné.
+- [x] Výraznější barvy z tématu: `tbar 0.1.0-9` (2026-11-21) má styly
+  `tinted` (obarvená lišta) a tlačítka v barvě tématu (`accent`, `magenta`,
+  `blue`, `cyan`, `green`, `yellow`, `orange`, `red`) a volbu „Použít pro
+  všechna rozložení“. Prošly testy a náhled rendereru s tématem Catppuccin;
+  **na panelu nepotvrzeno**. Zbývá ruční výběr libovolné barvy; Catppuccin
+  v Omarchy nemá fialovou (`accent` je modrá, `magenta` růžová).
 - [ ] Vlastní Esc (jen `tbar`): renderer umí tlačítko s `key: "esc"` a vlastním
   popiskem nebo glyfem z Nerd Fontu, takže Esc s jiným textem či ikonou jde
   bez zásahu do rendereru. Totéž platí pro globální písmo lišty (`font`).

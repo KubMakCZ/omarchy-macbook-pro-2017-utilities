@@ -6,7 +6,7 @@
   "required": ["name", "buttons"],
   "properties": {
     "name": {"type": "string", "minLength": 1, "maxLength": 40, "pattern": "^\\S(?:[\\s\\S]*\\S)?$"},
-    "theme": {"const": "auto"},
+    "theme": {"enum": ["auto", "tinted", "accent", "red", "orange", "yellow", "green", "cyan", "blue", "magenta"]},
     "apps": {"type": "array", "maxItems": 8, "items": {"type": "string", "pattern": "^[A-Za-z0-9._+-]{1,64}$"}},
     "buttons": {
       "type": "array", "maxItems": 12,

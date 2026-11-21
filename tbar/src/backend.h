@@ -19,7 +19,7 @@ class Backend : public QObject {
     Q_PROPERTY(QUrl preview READ preview NOTIFY previewChanged)
     Q_PROPERTY(QString previewError READ previewError NOTIFY previewChanged)
     Q_PROPERTY(bool previewFn READ previewFn WRITE setPreviewFn NOTIFY previewChanged)
-    Q_PROPERTY(bool themeAuto READ themeAuto NOTIFY changed)
+    Q_PROPERTY(QString themeStyle READ themeStyle NOTIFY changed)
     Q_PROPERTY(QString apps READ apps NOTIFY changed)
     Q_PROPERTY(QString applied READ appliedProfile NOTIFY appliedChanged)
 
@@ -33,7 +33,8 @@ public:
     QUrl preview() const { return m_preview; }
     QString previewError() const { return m_previewError; }
     bool previewFn() const { return m_previewFn; }
-    bool themeAuto() const;
+    QString themeStyle() const;
+    Q_INVOKABLE bool setThemeStyle(const QString &style, bool everywhere);
     void setPreviewFn(bool enabled);
     QString apps() const;
     QString appliedProfile() const;

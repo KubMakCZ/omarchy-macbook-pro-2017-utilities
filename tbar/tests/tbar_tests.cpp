@@ -92,6 +92,7 @@ void BackendTests::controlsAndSceneSwitching() {
                             R"({"name":"x","buttons":[{"label":"x","kind":"scene","command":""}]})",
                             R"({"name":"x","buttons":[{"label":"x","kind":"scene-next","command":"y"}]})",
                             R"({"name":"x","apps":["a b"],"buttons":[]})",
+                            R"({"name":"x","theme":"rainbow","buttons":[]})",
                             R"({"name":"x","apps":"firefox","buttons":[]})"})
         QVERIFY2(!Backend::validateProfile(QJsonDocument::fromJson(bad).object()).isEmpty(), bad);
     QVERIFY(Backend::validateProfile(QJsonDocument::fromJson(
@@ -345,9 +346,24 @@ void BackendTests::themedLayoutFollowsChangesSafely() {
     QVERIFY(QDir().mkpath(tmp.path() + "/omarchy/current/theme"));
     QFile theme(tmp.path() + "/omarchy/current/theme/colors.toml");
     QVERIFY(theme.open(QIODevice::WriteOnly));
-    theme.write("accent = \"#123456\"\nlighter_background = \"#202020\"\nforeground = \"#eeeeee\"\n");
+    theme.write("accent = \"#123456\"\nlighter_background = \"#202020\"\nforeground = \"#eeeeee\"\n"
+                "magenta = \"#f5c2e7\"\ndarker_background = \"#101019\"\nbackground = \"#1e1e2e\"\n"
+                "selection = \"#45475a\"\n");
     theme.close();
     Backend model(tmp.path() + "/config");
+    QVERIFY(!model.setThemeStyle("rainbow", false));
+    QVERIFY(model.addProfile("Second"));
+    QVERIFY(model.setThemeStyle("magenta", true));
+    auto colors = model.exportProfile("Omarchy").value("colors").toObject();
+    QCOMPARE(colors.value("key").toString(), QString("#f5c2e7"));
+    QCOMPARE(colors.value("text").toString(), QString("#101019"));
+    QCOMPARE(colors.value("background").toString(), QString("#101019"));
+    QVERIFY(model.setThemeStyle("tinted", false));
+    colors = model.rendererConfig().value("colors").toObject();
+    QCOMPARE(colors.value("background").toString(), QString("#1e1e2e"));
+    QCOMPARE(colors.value("key").toString(), QString("#45475a"));
+    QVERIFY(model.setThemeStyle("", true));
+    QVERIFY(!model.exportProfile("Omarchy").contains("colors"));
     QVERIFY(model.setThemeAuto(true));
     QVERIFY(model.apply());
     const QString path = tmp.path() + "/config/omarchy-glance/touchbar.json";

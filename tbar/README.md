@@ -117,8 +117,18 @@ a `space-evenly` renderer nepodporuje.
 
 ### Barvy podle tématu
 
-Volba „Barvy tlačítek podle tématu Omarchy“ platí pro celou vybranou scénu
-včetně Esc a dalších tlačítek. Po použití scény hook při změně tématu bezpečně
+Nabídka „Barvy“ platí pro celou vybranou scénu včetně Esc; „Použít pro
+všechna rozložení“ nastaví stejný styl všem scénám. Styly berou barvy
+z aktuálního tématu Omarchy, i vlastního:
+
+| Styl (`theme`) | Lišta | Tlačítka | Text |
+| --- | --- | --- | --- |
+| vynecháno | černá | šedá | bílý |
+| `auto` | černá | `lighter_background` | `foreground` |
+| `tinted` | `background` | `selection` | `foreground` |
+| `accent`, `magenta`, `blue`, `cyan`, `green`, `yellow`, `orange`, `red` | `darker_background` | zvolená barva tématu | `darker_background` |
+
+Po použití scény hook při změně tématu bezpečně
 aktualizuje barvy; nezasáhne do konfigurace změněné mimo editor. Grafy používají
 výchozí barvy tématu btop, které renderer průběžně sleduje. Automatická změna
 barev tlačítek vyžaduje nainstalovaný hook, není vázaná na otevřený editor.
