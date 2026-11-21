@@ -33,8 +33,8 @@ HandleSuspendKey=ignore
 CONFIG
 cat > "$temp/sleep" <<'CONFIG'
 # Nainstaloval omarchy-macbook-pro-2017-utilities (install-no-suspend.sh).
-# Systém uspání do RAM vůbec nenabízí, takže ho nezvolí UPower, nabídka ani
-# nečinnost.
+# Systém uspání do RAM vůbec nenabízí, takže ho nezvolí ani UPower při téměř
+# vybité baterii (použije hibernaci nebo vypnutí) ani nabídka či nečinnost.
 [Sleep]
 AllowSuspend=no
 AllowSuspendThenHibernate=no
