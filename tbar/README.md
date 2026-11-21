@@ -100,6 +100,10 @@ Vypnutí: `systemctl --user disable --now tbar-watch.service`. Služba reaguje
 jen na změnu aplikace, takže ručně přepnutá scéna vydrží, dokud nepřejdeš
 jinam. Vyžaduje Hyprland.
 
+Tlačítka scény mohou posílat klávesové zkratky aktivnímu oknu pomocí `wtype`,
+například `wtype -M ctrl t -m ctrl` pro nový panel prohlížeče nebo
+`wtype -M alt -k Left -m alt` pro krok zpět.
+
 ### Umístění a šířky
 
 U položky klikni na „Upravit“ a vyber levou, střední nebo pravou část a šířku;
@@ -253,7 +257,8 @@ mimo správu balíčků. Aktualizace může funkce rozbít. Návod na
 
 Ovládací tlačítka (hlasitost, jas, podsvícení klávesnice, média) a tlačítko
 další scény uživatel potvrdil na panelu MacBookPro14,2 dne 2026-11-21
-(`tbar 0.1.0-8`). Automatika podle aplikace a tlačítko mikrofonu prošly jen
-testy, **na panelu potvrzeny nejsou**. Posuvníky, GIFy, libovolný počet prvků a vlastní grafické ikony
+(`tbar 0.1.0-8`). Automatika podle aplikace na témže stroji přepnula scénu
+při přechodu do Firefoxu a zpět (ověřeno stavem `tbar list`), pohledem na
+panel ji uživatel ještě nepotvrdil. Tlačítko mikrofonu prošlo jen testy. Posuvníky, GIFy, libovolný počet prvků a vlastní grafické ikony
 nejsou implementovány.
 Budoucí úpravy OpenCore jsou samostatný úkol; tento projekt bootloader nemění.

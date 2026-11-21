@@ -87,9 +87,11 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   den potvrdil funkci tlačítek scény „Ovladani“ na panelu. Zbývá: výběr ze seznamu a automatické tlačítko
   zpět.
 - [x] Volitelné automatické přepínání podle aktivní aplikace (`apps`,
-  `tbar-watch.service`), implementováno 2026-11-21; prošly testy s napodobeným
-  Hyprlandem, **na skutečném stroji nepotvrzeno**. Zbývá ověřit chování po
-  restartu a při zamčené obrazovce.
+  `tbar-watch.service`), implementováno 2026-11-21. Tentýž den zapnuto na
+  testovaném stroji: po přepnutí do Firefoxu se použila scéna `Web` a po
+  návratu předchozí scéna (ověřeno stavem `tbar list`, Hyprland 0.56.2);
+  **uživatel to na panelu ještě nepotvrdil**. Zbývá ověřit chování po restartu
+  a při zamčené obrazovce.
 - [x] Ovládání hlasitosti, jasu displeje, podsvícení klávesnice, médií a
   mikrofonu jako hotové skupiny tlačítek (`control`), 2026-11-21; hlasitost,
   jas, podsvícení klávesnice a média uživatel potvrdil na panelu, mikrofon
