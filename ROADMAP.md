@@ -113,6 +113,46 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
 - [ ] Ověřit nové pozice, styly a automatické změny tématu na fyzickém panelu
   včetně restartu. Nedělat to potichu změnou uživatelovy aktivní scény.
 
+## Touch Bar: vzhled a přizpůsobení (nápady uživatele, 2026-11-21)
+
+Uživateli připadají šedá tlačítka nudná a chce výrazně bohatší vzhled. Co jde
+hned, co vyžaduje jen `tbar` a co zásah do rendereru `omarchy-glance`
+(samostatný projekt; změna znamená příspěvek upstreamu nebo vlastní fork a
+novou připnutou revizi v `install-glance.sh`):
+
+- [x] Barvy podle zapnutého tématu Omarchy existují: volba „Barvy tlačítek
+  podle tématu Omarchy“ (`"theme": "auto"`) čte `colors.toml` aktuálního
+  tématu a hook `tbar-theme-sync` je při změně tématu přepíše. Funguje i pro
+  vlastní téma, žádný zvláštní skript není potřeba. Uživatel ji ale ve svých
+  scénách zatím zapnutou nemá.
+- [ ] Výraznější barvy z tématu (jen `tbar`). Dnes se bere `lighter_background`
+  na tlačítka, `accent` na stisk a `foreground` na text; u Catppuccinu to dává
+  tmavě břidlicová tlačítka, ne fialovou. Přidat volbu stylu, např. tlačítka
+  v barvě `accent` nebo `magenta` s tmavým textem, obarvené pozadí lišty
+  (`colors.background`) a ruční výběr barev ve scéně. Zvážit volbu „pro
+  všechny scény“ místo zapínání po jedné.
+- [ ] Vlastní Esc (jen `tbar`): renderer umí tlačítko s `key: "esc"` a vlastním
+  popiskem nebo glyfem z Nerd Fontu, takže Esc s jiným textem či ikonou jde
+  bez zásahu do rendereru. Totéž platí pro globální písmo lišty (`font`).
+- [ ] Ikony na vlastních tlačítkách (jen `tbar`): renderer má `icon`
+  (glyf Nerd Fontu) a `iconSize`; scéna dnes umí jen textový popisek.
+- [ ] Barva jednotlivých tlačítek: renderer má barvy jen pro celou lištu.
+  Vyžaduje zásah do rendereru.
+- [ ] Obrázek PNG místo Esc nebo na tlačítku, obrázkové pozadí lišty a
+  „vygenerované“ pozadí (např. přechod z barev tématu): renderer obrázky
+  nekreslí. Vyžaduje zásah do rendereru; lišta má 2170×60 px, viditelných
+  2060 px.
+- [ ] Animované pozadí (např. padající znaky ve stylu Matrixu) a animace
+  obecně: renderer překresluje jen při změně dat. Vyžaduje zásah do rendereru
+  a změření spotřeby a zátěže CPU; musí jít vypnout.
+- [ ] „Spořič“ Touch Baru po vzoru spořiče Omarchy: po nečinnosti místo
+  tlačítek animace nebo logo, dotyk vrátí scénu. Renderer dnes umí jen
+  ztlumení po nečinnosti (`idleDimSeconds`); `tbar` ho zatím nenastavuje, což
+  je snadný první krok. Skutečný spořič vyžaduje animace, tedy renderer. Esc
+  musí zůstat dostupný a spořič nesmí zobrazovat nic citlivého.
+- [ ] Před prací na rendereru ověřit jeho licenci, zda upstream o takové
+  funkce stojí, a rozhodnout mezi příspěvkem a forkem.
+
 ## Hardware a vzhled systému
 
 - [ ] Ověřit kameru, Bluetooth, sluchátka, externí monitor a USB-C zařízení;
