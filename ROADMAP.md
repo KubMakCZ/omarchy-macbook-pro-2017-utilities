@@ -156,8 +156,17 @@ novou připnutou revizi v `install-glance.sh`):
   ztlumení po nečinnosti (`idleDimSeconds`); `tbar` ho zatím nenastavuje, což
   je snadný první krok. Skutečný spořič vyžaduje animace, tedy renderer. Esc
   musí zůstat dostupný a spořič nesmí zobrazovat nic citlivého.
-- [ ] Před prací na rendereru ověřit jeho licenci, zda upstream o takové
-  funkce stojí, a rozhodnout mezi příspěvkem a forkem.
+- [ ] Licence rendereru (zjištěno 2026-11-21): repozitář
+  `andersryanc/omarchy-macbook-touchbar-custom` na připnuté revizi `9c75e5e`
+  **nemá žádný soubor s licencí** a GitHub u něj licenci neuvádí. Bez svolení
+  autora proto nelze upravenou kopii ani patch veřejně šířit; tento projekt
+  ho dál jen stahuje a sestavuje u uživatele. Možnosti: požádat autora o
+  licenci a nabídnout mu změny jako příspěvek, zkoušet úpravy jen soukromě na
+  vlastním stroji, nebo napsat vlastní renderer nad protokolem T1Bridge.
+  Rozhodnutí je na uživateli.
+- [ ] Technická proveditelnost (čteno ze zdroje, nezkoušeno): renderer kreslí
+  přes Cairo se zapnutou podporou PNG a hlavní smyčka čeká na nejbližší
+  termín, takže obrázky i časovač animace do něj zapadají bez přestavby.
 
 ## Hardware a vzhled systému
 
