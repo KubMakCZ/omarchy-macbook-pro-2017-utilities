@@ -130,10 +130,18 @@ bash setup.sh --no-suspend
 ```
 
 Příkaz přidá `/etc/systemd/logind.conf.d/60-omarchy-mbp-no-suspend.conf`
-(zavření víka a klávesa uspání se ignorují) a zamaskuje `suspend.target`,
+(zavření víka a klávesa uspání se ignorují),
+`/etc/systemd/sleep.conf.d/60-omarchy-mbp-no-suspend.conf` (systém uspání do
+RAM vůbec nenabízí) a zamaskuje `suspend.target`,
 `suspend-then-hibernate.target` a `hybrid-sleep.target`, takže počítač neuspí
 ani nabídka nebo nečinnost. Hibernace a vypnutí zůstávají. Existující odlišnou
-konfiguraci nepřepíše. Návrat:
+konfiguraci nepřepíše.
+
+Druhý soubor řeší vybitou baterii: 2026-11-20 počítač nezamrzl kvůli víku, ale
+protože UPower při téměř vybité baterii sám vyžádal `suspend-then-hibernate`
+(log: `PM: suspend entry (deep)` bez probuzení). Bez nabídky uspání má UPower
+zvolit hibernaci nebo vypnutí; **toto chování při vybité baterii zatím nebylo
+na stroji ověřeno**. Návrat:
 
 ```bash
 bash setup.sh --suspend-restore

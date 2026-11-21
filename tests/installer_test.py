@@ -90,6 +90,36 @@ exit 0
     assert sudo_log[1].endswith("install-no-suspend.sh")
     assert sudo_log[2].endswith("install-no-suspend.sh --remove")
     sudo.unlink()
+    fake_root = root / "fake-root"
+    no_suspend_env = env.copy()
+    no_suspend_env["OMARCHY_MBP_TEST_ROOT"] = str(fake_root)
+
+    def no_suspend(*args, expected=0):
+        result = subprocess.run(["bash", str(project / "install-no-suspend.sh"), *args],
+                                env=no_suspend_env, text=True, capture_output=True, timeout=30)
+        assert result.returncode == expected, (args, result.stdout, result.stderr)
+
+    logind_file = fake_root / "etc/systemd/logind.conf.d/60-omarchy-mbp-no-suspend.conf"
+    sleep_file = fake_root / "etc/systemd/sleep.conf.d/60-omarchy-mbp-no-suspend.conf"
+    no_suspend("--remove", expected=1)
+    no_suspend()
+    no_suspend()
+    assert "HandleLidSwitch=ignore" in logind_file.read_text()
+    assert "AllowSuspend=no" in sleep_file.read_text()
+    assert "mask suspend.target" in (home / "systemctl.log").read_text()
+    sleep_file.write_text("[Sleep]\nAllowSuspend=yes\n")
+    no_suspend(expected=1)
+    no_suspend("--remove", expected=1)
+    assert sleep_file.read_text() == "[Sleep]\nAllowSuspend=yes\n" and logind_file.exists()
+    sleep_file.unlink()
+    no_suspend("--remove")
+    assert not logind_file.exists()
+    assert "unmask suspend.target" in (home / "systemctl.log").read_text()
+    unit = fake_root / "etc/systemd/system/suspend.target"
+    unit.parent.mkdir(parents=True)
+    unit.write_text("custom unit")
+    no_suspend(expected=1)
+    assert not logind_file.exists() and unit.read_text() == "custom unit"
     import struct
     events = root / "events"
     event = struct.Struct("llHHi")
