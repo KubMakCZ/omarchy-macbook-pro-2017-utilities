@@ -21,7 +21,7 @@ zkontroluj i aktuální
 | Bluetooth, externí monitor, USB-C zařízení | | | vše |
 | Touch ID | experimentální podpora v T1Bridge | nenastaveno | vše |
 | Uspání a probuzení | | **nefunguje**, počítač se neprobudí; hibernace se neobnoví | `s2idle` |
-| Klávesa `n` | `applespi` | zdvojuje se, příčina neurčena | |
+| Klávesa `n` | `applespi` | zdvojuje se: naměřeny odskoky spínače i pomalé uvolnění | účinek delší prodlevy |
 
 ## Wi-Fi
 
@@ -209,7 +209,16 @@ a vyzkoušet bez instalace čehokoli:
 hyprctl keyword input:repeat_delay 600
 ```
 
-Příčina zatím **není určena**; softwarový filtr odskoků v projektu není.
+Měření 2026-11-21 (159 stisků za minutu) ukázalo **obě příčiny**:
+
+- odskoky: `N` 2× z 24 stisků (nejkratší 13 ms), `C` 1× ze 7 (24 ms), `H` 1×
+  z 5 (34 ms). Nový stisk 13 ms po uvolnění člověk neudělá, jde o vadu spínače;
+- dlouhé stisky 349–407 ms u `G`, `H` a `B`, tedy nad výchozí prodlevou 250 ms.
+
+Proti dlouhým stiskům je od téhož dne v `~/.config/hypr/input.lua` trvale
+`hl.config({ input = { repeat_delay = 450 } })`; zda to při běžném psaní
+pomáhá, uživatel zatím nepotvrdil. Odskoky delší prodleva neřeší a softwarový
+filtr odskoků v projektu není. Vzorek je malý, měření stojí za zopakování.
 
 ## Po aktualizaci jádra
 

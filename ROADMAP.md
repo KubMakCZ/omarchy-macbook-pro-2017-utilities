@@ -128,10 +128,10 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   Zbývá: zjistit příčinu neobnovení hibernace, rozhodnout chování UPower při
   vybité baterii (hibernace, nebo vypnutí) a případně zkusit `s2idle`. Hibernaci a `s2idle` zkoušet pouze po
   domluvě a záloze; vyřešit i vypnutí displeje při zavřeném víku.
-- [ ] Zdvojování klávesy `n`: nechat uživatele spustit
-  `setup.sh --keyboard-check`. Podle výsledku buď prodloužit prodlevu
-  opakování, nebo zvážit softwarový filtr odskoků (zachytává klávesnici,
-  proto vyžaduje bezpečný návrat při chybě).
+- [ ] Zdvojování klávesy `n`: měření 2026-11-21 našlo odskoky spínače
+  (`N` 13 ms) i pomalé uvolnění kláves. Prodleva opakování je prodloužena na
+  450 ms. Zbývá softwarový filtr odskoků (zachytává klávesnici, proto
+  vyžaduje bezpečný návrat při chybě) nebo vyčištění klávesnice.
 - [ ] Prozkoumat vzhled OpenCore bootloaderu s logy Macu a Omarchy jako
   **samostatný budoucí úkol**. Žádné změny bootloaderu či EFI bez výslovného
   souhlasu, ověřeného plánu návratu a záloh.
