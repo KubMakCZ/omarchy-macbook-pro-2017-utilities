@@ -194,6 +194,70 @@ ApplicationWindow {
                 }
             }
             RowLayout {
+                Label { text: qsTr("Screensaver after (s)") }
+                SpinBox { id: saverSeconds; from: 0; to: 3600; stepSize: 30; editable: true; value: backend.saver.seconds }
+                ComboBox {
+                    id: saverStyle
+                    readonly property var styles: ["matrix", "text", "image"]
+                    model: [qsTr("Running characters"), qsTr("Floating text"), qsTr("Floating image")]
+                    currentIndex: Math.max(0, styles.indexOf(backend.saver.style))
+                }
+                TextField {
+                    id: saverText
+                    visible: saverStyle.currentIndex === 1
+                    Layout.fillWidth: true
+                    maximumLength: 32
+                    placeholderText: "OMARCHY"
+                    text: backend.saver.text
+                }
+                TextField {
+                    id: saverImage
+                    visible: saverStyle.currentIndex === 2
+                    Layout.fillWidth: true
+                    maximumLength: 512
+                    placeholderText: qsTr("Path to a .png image")
+                    text: backend.saver.image
+                }
+                Item { visible: saverStyle.currentIndex === 0; Layout.fillWidth: true }
+            }
+            RowLayout {
+                Label { text: qsTr("Bar background") }
+                TextField {
+                    id: backgroundImage
+                    Layout.fillWidth: true
+                    maximumLength: 512
+                    placeholderText: qsTr("Path to a .png image")
+                    text: backend.saver.background
+                }
+                Button {
+                    text: qsTr("Save")
+                    objectName: "saveSaver"
+                    onClicked: backend.setSaver(saverSeconds.value, saverStyle.styles[saverStyle.currentIndex],
+                                                saverText.text, saverImage.text, backgroundImage.text, false)
+                }
+                Button {
+                    text: qsTr("Use for all layouts")
+                    onClicked: backend.setSaver(saverSeconds.value, saverStyle.styles[saverStyle.currentIndex],
+                                                saverText.text, saverImage.text, backgroundImage.text, true)
+                }
+                Connections {
+                    target: backend
+                    function onChanged() {
+                        saverSeconds.value = backend.saver.seconds
+                        saverStyle.currentIndex = Math.max(0, saverStyle.styles.indexOf(backend.saver.style))
+                        saverText.text = backend.saver.text
+                        saverImage.text = backend.saver.image
+                        backgroundImage.text = backend.saver.background
+                    }
+                }
+            }
+            Label {
+                text: qsTr("Screensaver and background need a renderer that supports them; the stock omarchy-glance ignores them.")
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+                color: "#a0a0a0"
+            }
+            RowLayout {
                 Label { text: qsTr("Show for apps") }
                 TextField {
                     id: appsInput

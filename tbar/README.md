@@ -104,6 +104,20 @@ Tlačítka scény mohou posílat klávesové zkratky aktivnímu oknu pomocí `wt
 například `wtype -M ctrl t -m ctrl` pro nový panel prohlížeče nebo
 `wtype -M alt -k Left -m alt` pro krok zpět.
 
+### Spořič a obrázek na pozadí (experimentální)
+
+Řádky „Spořič po (s)“ a „Pozadí lišty“ zapisují do scény volby `screensaver`
+(sekundy nečinnosti, 0 = vypnuto), `screensaverStyle` (`matrix` běžící znaky,
+`text` plovoucí nápis, `image` plovoucí obrázek), `screensaverText`,
+`screensaverImage` a `backgroundImage` (absolutní cesty k souborům `.png`).
+Barva spořiče se bere z barev scény a mění se s tématem.
+
+**Původní renderer omarchy-glance tyto volby ignoruje.** Fungují jen
+s rendererem, který je umí; takový zatím není veřejně dostupný, protože
+upstream nemá licenci dovolující šířit upravenou verzi (viz
+[ROADMAP.md](../ROADMAP.md)). Bez něj se nic nerozbije, jen se spořič ani
+pozadí nezobrazí.
+
 ### Umístění a šířky
 
 U položky klikni na „Upravit“ a vyber levou, střední nebo pravou část a šířku;

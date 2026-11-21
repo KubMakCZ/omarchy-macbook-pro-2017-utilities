@@ -59,6 +59,11 @@ tbar was first used, and refuses if that layout was changed outside tbar.
   replace the face of the Escape key; it still sends Escape.
 - `font`: font family for the whole bar, e.g. `"JetBrainsMono Nerd Font"`.
 - `idleDim`: seconds without a touch before the bar dims (0 or omitted: never).
+- Experimental, ignored by the stock omarchy-glance renderer: `screensaver`
+  (idle seconds, 0-3600), `screensaverStyle` (`matrix`, `text` or `image`),
+  `screensaverText` (1-32 characters), `screensaverImage` and
+  `backgroundImage` (absolute paths to `.png` files). Ask the user whether
+  their renderer supports them before relying on these.
 - `apps`: optional, at most 8 Hyprland window classes (`A-Za-z0-9._+-`,
   case-insensitive, see `hyprctl activewindow`). While the user's
   `tbar-watch.service` runs, the scene is shown when such a window is focused

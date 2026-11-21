@@ -23,6 +23,7 @@ class Backend : public QObject {
     Q_PROPERTY(QString themeStyle READ themeStyle NOTIFY changed)
     Q_PROPERTY(QString apps READ apps NOTIFY changed)
     Q_PROPERTY(QVariantMap look READ look NOTIFY changed)
+    Q_PROPERTY(QVariantMap saver READ saver NOTIFY changed)
     Q_PROPERTY(QString applied READ appliedProfile NOTIFY appliedChanged)
 
 public:
@@ -40,6 +41,7 @@ public:
     void setPreviewFn(bool enabled);
     QString apps() const;
     QVariantMap look() const;
+    QVariantMap saver() const;
     QString appliedProfile() const;
     QString manualProfile() const;
     QString nextProfile() const;
@@ -59,6 +61,8 @@ public:
     Q_INVOKABLE bool setApps(const QString &list);
     Q_INVOKABLE bool setLook(const QString &escLabel, const QString &escIcon, const QString &font, int idleDim);
     Q_INVOKABLE bool setItemIcon(int index, const QString &icon);
+    Q_INVOKABLE bool setSaver(int seconds, const QString &style, const QString &text, const QString &image,
+                              const QString &background, bool everywhere);
     Q_INVOKABLE bool editItem(int index, const QString &section, int width,
                               const QString &style, int interval, bool temperature);
     Q_INVOKABLE bool setThemeAuto(bool enabled);

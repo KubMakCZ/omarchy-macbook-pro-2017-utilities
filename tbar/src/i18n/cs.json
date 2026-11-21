@@ -137,5 +137,15 @@
   "An icon is one glyph on a button or layout switch.": "Ikona je jeden znak a jde nastavit jen tlačítku nebo přepínači rozložení.",
   "Choose an icon": "Vyber ikonu",
   "More glyphs: copy one from nerdfonts.com/cheat-sheet into the field.": "Další znaky: zkopíruj je z nerdfonts.com/cheat-sheet do pole.",
-  "No icon": "Bez ikony"
+  "No icon": "Bez ikony",
+  "Screensaver after (s)": "Spořič po (s)",
+  "Running characters": "Běžící znaky",
+  "Floating text": "Plovoucí nápis",
+  "Floating image": "Plovoucí obrázek",
+  "Path to a .png image": "Cesta k obrázku .png",
+  "Bar background": "Pozadí lišty",
+  "Save": "Uložit",
+  "Screensaver and background need a renderer that supports them; the stock omarchy-glance ignores them.": "Spořič a pozadí potřebují renderer, který je umí; původní omarchy-glance je ignoruje.",
+  "Check the screensaver time, style and text; images are absolute paths to .png files.": "Zkontroluj dobu, styl a text spořiče; obrázky jsou absolutní cesty k souborům .png.",
+  "Image not found: %1": "Obrázek nebyl nalezen: %1"
 }

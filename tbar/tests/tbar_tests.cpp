@@ -95,6 +95,9 @@ void BackendTests::controlsAndSceneSwitching() {
                             R"({"name":"x","theme":"rainbow","buttons":[]})",
                             R"({"name":"x","theme":"#12","buttons":[]})",
                             R"({"name":"x","idleDim":1.5,"buttons":[]})",
+                            R"({"name":"x","screensaver":5000,"buttons":[]})",
+                            R"({"name":"x","backgroundImage":"bg.png","buttons":[]})",
+                            R"({"name":"x","screensaverImage":"/tmp/logo.jpg","buttons":[]})",
                             R"({"name":"x","escLabel":"a\nb","buttons":[]})",
                             R"({"name":"x","buttons":[{"label":"x","kind":"widget","command":"cpu","icon":"K"}]})",
                             R"({"name":"x","apps":"firefox","buttons":[]})"})
@@ -396,6 +399,20 @@ void BackendTests::themedLayoutFollowsChangesSafely() {
     QCOMPARE(escKey.value("icon").toString(), QString("X"));
     QVERIFY(!escKey.contains("label"));
     QVERIFY(model.setLook("", "", "", 0));
+    QVERIFY(model.setThemeStyle("magenta", false));
+    QVERIFY(!model.setSaver(120, "plasma", "", "", "", false));
+    QVERIFY(!model.setSaver(120, "image", "", "relative.png", "", false));
+    QVERIFY(!model.setSaver(120, "matrix", "", "", "/nonexistent/background.png", false));
+    QVERIFY(model.setSaver(120, "text", "Ahoj", "", "", true));
+    auto saver = model.rendererConfig();
+    QCOMPARE(saver.value("screensaverSeconds").toInt(), 120);
+    QCOMPARE(saver.value("screensaverStyle").toString(), QString("text"));
+    QCOMPARE(saver.value("screensaverText").toString(), QString("Ahoj"));
+    QCOMPARE(saver.value("screensaverColor").toString(), QString("#f5c2e7"));
+    QVERIFY(model.exportProfile("Second").contains("screensaverSeconds"));
+    QVERIFY(model.setSaver(0, "matrix", "", "", "", true));
+    QVERIFY(!model.rendererConfig().contains("screensaverSeconds"));
+    QVERIFY(model.setThemeStyle("", false));
     QVERIFY(model.addButton("Keys", "true"));
     const int last = model.buttons().size() - 1;
     QVERIFY(model.setItemIcon(last, "K"));

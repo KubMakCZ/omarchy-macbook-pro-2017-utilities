@@ -19,7 +19,7 @@ Rozšíření podpory na jiné Macy se musí samostatně ověřit.
   commitu `9461ffe` při kontrole.
 - Nainstalované balíčky: `tbar 0.1.0-5`, `t1bridge 0.1.12-1`,
   `t1bridge-dkms 0.1.12-1`, `t1bridge-omarchy 0.2.2-1`.
-- Zdroj `tbar` v repozitáři je `0.1.0-11` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
+- Zdroj `tbar` v repozitáři je `0.1.0-12` (přepínání scén, ovládací tlačítka, automatika podle aplikace, styly barev, vlastní Esc a ikony); nainstalován
   2026-11-21.
 - Uživatelské služby `t1-touchbar.service` a `omarchy-glance.service` a
   systémová služba `omarchy-mbp-usb-power.service` byly při kontrole aktivní.
@@ -164,7 +164,22 @@ novou připnutou revizi v `install-glance.sh`):
   licenci a nabídnout mu změny jako příspěvek, zkoušet úpravy jen soukromě na
   vlastním stroji, nebo napsat vlastní renderer nad protokolem T1Bridge.
   Rozhodnutí je na uživateli.
-- [ ] Technická proveditelnost (čteno ze zdroje, nezkoušeno): renderer kreslí
+- [x] Soukromá zkouška na testovaném stroji (2026-11-21): do místní kopie
+  rendereru (mimo tento repozitář, nešíří se) přibyl spořič (běžící znaky,
+  plovoucí nápis nebo obrázek PNG; první dotyk jen probudí) a obrázek na
+  pozadí lišty. Prošly testy rendereru a uživatel potvrdil běžící animaci na
+  panelu; renderer při 12 snímcích za sekundu bral pod 1 % jednoho jádra,
+  zátěž ovladače a vliv na baterii změřeny nejsou. Původní binárka je
+  zálohována jako `~/.local/bin/omarchy-glance.upstream-9c75e5e`;
+  `setup.sh --renderer-build` na tomto stroji proto odmítne běžet, dokud se
+  nevrátí.
+- [x] `tbar 0.1.0-12` umí tyto volby zapsat do scény (`screensaver`,
+  `screensaverStyle`, `screensaverText`, `screensaverImage`,
+  `backgroundImage`); původní renderer je ignoruje.
+- [ ] Zveřejnění upraveného rendereru závisí na licenci (výše). Animované
+  pozadí pod tlačítky a různé barvy tlačítek zatím nejsou ani v soukromé
+  kopii.
+- [x] Technická proveditelnost (čteno ze zdroje, potvrzeno zkouškou výše): renderer kreslí
   přes Cairo se zapnutou podporou PNG a hlavní smyčka čeká na nejbližší
   termín, takže obrázky i časovač animace do něj zapadají bez přestavby.
 

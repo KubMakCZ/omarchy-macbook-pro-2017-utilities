@@ -45,6 +45,17 @@ bool validText(const QJsonValue &value, int max) {
     return true;
 }
 
+bool validPng(const QJsonValue &value) {
+    const QString path = value.toString();
+    return validText(value, 512) && path.startsWith('/') && path.endsWith(".png", Qt::CaseInsensitive);
+}
+
+// The screensaver takes the liveliest colour of the bar: the key colour of a
+// painted style, otherwise the accent shown on a pressed key.
+QString saverColor(const QString &style, const QJsonObject &colors) {
+    return colors.value(vivid.contains(style) || hexColor.match(style).hasMatch() ? "key" : "keyPressed").toString();
+}
+
 QJsonObject themeColors(const QString &style) {
     if (hexColor.match(style).hasMatch()) {
         // A hand-picked key colour: black bar, and black or white text by brightness.
@@ -357,7 +368,9 @@ QJsonObject Backend::profile(const QString &name) const {
 }
 
 QString Backend::validateProfile(const QJsonObject &profile) {
-    const QStringList profileKeys{"name", "theme", "apps", "buttons", "escLabel", "escIcon", "font", "idleDim"};
+    const QStringList profileKeys{"name", "theme", "apps", "buttons", "escLabel", "escIcon", "font", "idleDim",
+                                  "screensaver", "screensaverStyle", "screensaverText", "screensaverImage",
+                                  "backgroundImage"};
     for (auto it = profile.begin(); it != profile.end(); ++it)
         if (!profileKeys.contains(it.key())) return "Unknown profile field: " + it.key();
     if (!profile.value("name").isString() || profile.value("name").toString().trimmed().isEmpty()
@@ -373,6 +386,18 @@ QString Backend::validateProfile(const QJsonObject &profile) {
         return "escIcon must be a glyph of 1-4 characters";
     if (profile.contains("font") && !validText(profile.value("font"), 64))
         return "font must be a font family name of 1-64 characters";
+    if (profile.contains("screensaver") && (!profile.value("screensaver").isDouble()
+        || profile.value("screensaver").toDouble() != profile.value("screensaver").toInt()
+        || profile.value("screensaver").toInt() < 0 || profile.value("screensaver").toInt() > 3600))
+        return "screensaver must be an integer from 0 to 3600 seconds";
+    if (profile.contains("screensaverStyle")
+        && !QStringList{"matrix", "text", "image"}.contains(profile.value("screensaverStyle").toString()))
+        return "screensaverStyle must be matrix, text or image";
+    if (profile.contains("screensaverText") && !validText(profile.value("screensaverText"), 32))
+        return "screensaverText must be a single line of 1-32 characters";
+    for (const QString key : {"screensaverImage", "backgroundImage"})
+        if (profile.contains(key) && !validPng(profile.value(key)))
+            return key + " must be an absolute path to a .png file";
     if (profile.contains("idleDim") && (!profile.value("idleDim").isDouble()
         || profile.value("idleDim").toDouble() != profile.value("idleDim").toInt()
         || profile.value("idleDim").toInt() < 0 || profile.value("idleDim").toInt() > 3600))
@@ -632,6 +657,46 @@ QString Backend::apps() const {
     return names.join(", ");
 }
 
+QVariantMap Backend::saver() const {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
+    const QJsonObject scene = m_profiles[m_selected].toObject();
+    return {{"seconds", scene.value("screensaver").toInt()},
+            {"style", scene.value("screensaverStyle").toString("matrix")},
+            {"text", scene.value("screensaverText").toString()},
+            {"image", scene.value("screensaverImage").toString()},
+            {"background", scene.value("backgroundImage").toString()}};
+}
+
+bool Backend::setSaver(int seconds, const QString &style, const QString &text, const QString &image,
+                       const QString &background, bool everywhere) {
+    if (m_selected < 0 || m_selected >= m_profiles.size()) return false;
+    QJsonArray updated = m_profiles;
+    for (int index = 0; index < updated.size(); ++index) {
+        if (!everywhere && index != m_selected) continue;
+        QJsonObject scene = updated[index].toObject();
+        const QList<QPair<QString, QString>> texts{{"screensaverText", text.trimmed()},
+            {"screensaverImage", image.trimmed()}, {"backgroundImage", background.trimmed()}};
+        for (const auto &item : texts) {
+            if (item.second.isEmpty()) scene.remove(item.first);
+            else scene.insert(item.first, item.second);
+        }
+        if (seconds > 0) {
+            scene.insert("screensaver", seconds);
+            scene.insert("screensaverStyle", style);
+        } else {
+            scene.remove("screensaver");
+            scene.remove("screensaverStyle");
+        }
+        if (!validateProfile(scene).isEmpty())
+            return fail(tr("Check the screensaver time, style and text; images are absolute paths to .png files."));
+        for (const QString &path : {image.trimmed(), background.trimmed()})
+            if (!path.isEmpty() && !QFileInfo(path).isFile())
+                return fail(tr("Image not found: %1").arg(path));
+        updated[index] = scene;
+    }
+    return save(updated, m_selected, everywhere);
+}
+
 QVariantMap Backend::look() const {
     if (m_selected < 0 || m_selected >= m_profiles.size()) return {};
     const QJsonObject scene = m_profiles[m_selected].toObject();
@@ -852,9 +917,20 @@ QJsonObject Backend::rendererConfig() const {
     }}};
     if (scene.contains("font")) result.insert("font", scene.value("font"));
     if (scene.contains("idleDim")) result.insert("idleDimSeconds", scene.value("idleDim"));
+    // Screensaver and background image need a renderer that knows them; the
+    // stock omarchy-glance ignores these keys.
+    if (scene.value("screensaver").toInt() > 0) {
+        result.insert("screensaverSeconds", scene.value("screensaver"));
+        result.insert("screensaverStyle", scene.value("screensaverStyle").toString("matrix"));
+        if (scene.contains("screensaverText")) result.insert("screensaverText", scene.value("screensaverText"));
+        if (scene.contains("screensaverImage")) result.insert("screensaverImage", scene.value("screensaverImage"));
+    }
+    if (scene.contains("backgroundImage")) result.insert("backgroundImage", scene.value("backgroundImage"));
     if (!themeStyle().isEmpty()) {
         result.insert("tbar", QJsonObject{{"theme", themeStyle()}});
         result.insert("colors", themeColors(themeStyle()));
+        const QString saver = saverColor(themeStyle(), result.value("colors").toObject());
+        if (result.contains("screensaverSeconds") && !saver.isEmpty()) result.insert("screensaverColor", saver);
     }
     return result;
 }
@@ -994,6 +1070,8 @@ bool Backend::syncTheme() {
     if (colors.isEmpty()) return fail(tr("Could not read the Omarchy theme colors."));
     if (config.value("colors").toObject() == colors) return true;
     config.insert("colors", colors);
+    if (config.contains("screensaverSeconds") && !saverColor(style, colors).isEmpty())
+        config.insert("screensaverColor", saverColor(style, colors));
     QString writeError;
     if (!writeJson(path, config, &writeError))
         return fail(tr("Could not apply the layout: %1").arg(writeError));

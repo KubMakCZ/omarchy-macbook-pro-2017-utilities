@@ -12,6 +12,11 @@
     "escIcon": {"type": "string", "minLength": 1, "maxLength": 4, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$"},
     "font": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$"},
     "idleDim": {"type": "integer", "minimum": 0, "maximum": 3600},
+    "screensaver": {"type": "integer", "minimum": 0, "maximum": 3600},
+    "screensaverStyle": {"enum": ["matrix", "text", "image"]},
+    "screensaverText": {"type": "string", "minLength": 1, "maxLength": 32, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$"},
+    "screensaverImage": {"type": "string", "maxLength": 512, "pattern": "^/[^\\u0000-\\u001f\\u007f-\\u009f]*\\.[pP][nN][gG]$"},
+    "backgroundImage": {"type": "string", "maxLength": 512, "pattern": "^/[^\\u0000-\\u001f\\u007f-\\u009f]*\\.[pP][nN][gG]$"},
     "apps": {"type": "array", "maxItems": 8, "items": {"type": "string", "pattern": "^[A-Za-z0-9._+-]{1,64}$"}},
     "buttons": {
       "type": "array", "maxItems": 12,
