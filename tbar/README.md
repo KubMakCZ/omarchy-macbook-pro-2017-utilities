@@ -106,6 +106,11 @@ například `wtype -M ctrl t -m ctrl` pro nový panel prohlížeče nebo
 
 ### Spořič a obrázek na pozadí (experimentální)
 
+![Sedm stylů spořiče Touch Baru: matrix, scanner, waves, stars, equalizer, plasma a pong](screenshots/screensaver.gif)
+
+Ukázka je složená z náhledů rendereru (zmenšeno na polovinu), shora styly
+`matrix`, `scanner`, `waves`, `stars`, `equalizer`, `plasma` a `pong`.
+
 Řádky „Spořič po (s)“ a „Pozadí lišty“ zapisují do scény volby `screensaver`
 (sekundy nečinnosti, 0 = vypnuto), `screensaverStyle` (`matrix` běžící znaky,
 `text` plovoucí nápis, `image` plovoucí obrázek; editor nabízí i `scanner`,
